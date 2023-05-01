@@ -1,6 +1,6 @@
 ![savant-logo](./frontend/public/assets/logo512.png)
 
-# Savant: ask me a question Ill tell you no lies.
+# Savant: Ask me a question, I'll tell you no lies.
 
 An AI document ingestion, analysis and query tool
 

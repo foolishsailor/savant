@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Button,
   Grid,
@@ -12,7 +12,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
 const DocumentsList = () => {
-  const [documents, setDocuments] = useState<any[]>([]);
+  const [documentsToUpload, setDocumentsToUpload] = useState<any[]>([]);
+  const [documentsUploaded, setDocumentsUploaded] = useState<any[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addDocument = async (file: File) => {
     try {
@@ -24,7 +26,7 @@ const DocumentsList = () => {
         body: JSON.stringify({ documents: [file.name] })
       });
       const data = await result.json();
-      setDocuments(data);
+      setDocumentsToUpload(data);
     } catch (error) {
       console.error(error);
     }
@@ -37,9 +39,40 @@ const DocumentsList = () => {
         { method: 'DELETE' }
       );
       const data = await result.json();
-      setDocuments(data);
+      setDocumentsToUpload(data);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleUpload = async () => {
+    const formData = new FormData();
+    documentsToUpload.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    try {
+      const response = await fetch('http://localhost:4000/addDocuments', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (response.ok) {
+        console.log('Files uploaded successfully');
+      } else {
+        console.error('Error uploading files');
+      }
+    } catch (error) {
+      console.error('Error uploading files', error);
+    }
+
+    setDocumentsToUpload([]);
+  };
+
+  const handleFileInputChange = () => {
+    if (fileInputRef.current && fileInputRef.current.files) {
+      const newDocuments = Array.from(fileInputRef.current.files);
+      setDocumentsToUpload([...documentsToUpload, ...newDocuments]);
     }
   };
 
@@ -57,7 +90,7 @@ const DocumentsList = () => {
       }}
     >
       <List>
-        {documents.map((doc, index) => (
+        {documentsToUpload.map((doc, index) => (
           <ListItem key={index}>
             <ListItemText primary={`${doc.name} (${doc.type})`} />
             <ListItemSecondaryAction>
@@ -72,12 +105,19 @@ const DocumentsList = () => {
           </ListItem>
         ))}
       </List>
-      <Button variant="contained" startIcon={<AddIcon />} component="label">
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        component="label"
+        onClick={handleUpload}
+      >
         Add Document
         <input
           type="file"
           hidden
-          onChange={(e) => e.target.files && addDocument(e.target.files[0])}
+          multiple
+          ref={fileInputRef}
+          onChange={handleFileInputChange}
         />
       </Button>
     </Grid>

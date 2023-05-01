@@ -8,6 +8,7 @@ import { DocumentContainer } from './components/documentContainer';
 import { ConversationContainer } from './components/conversationContainer';
 import QueryInput from './components/queryInput';
 import DocumentsList from './components/documentList';
+import Header from './components/header';
 const darkTheme = createTheme({
   palette: {
     mode: 'dark'
@@ -27,6 +28,7 @@ const App: React.FC = () => {
       <Container maxWidth="lg" sx={{}}>
         <PageContainer>
           <QueryContainer>
+            <Header />
             <ConversationContainer>
               <ReactMarkdown>{response}</ReactMarkdown>
             </ConversationContainer>
