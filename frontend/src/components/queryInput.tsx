@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid } from '@mui/material';
 
-const QueryInput = () => {
+export interface QueryInputProps {
+  onResponse: (response: string) => void;
+}
+
+const QueryInput = ({ onResponse }: QueryInputProps) => {
   const [inputText, setInputText] = useState('');
-  const [response, setResponse] = useState('');
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
@@ -17,7 +20,8 @@ const QueryInput = () => {
         body: JSON.stringify({ question: inputText })
       });
       const data = await result.json();
-      setResponse(data.response);
+
+      onResponse(data.response);
     } catch (error) {
       console.error(error);
     }
