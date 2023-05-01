@@ -1,103 +1,47 @@
-import { ChromaClient, Collection, OpenAIEmbeddingFunction } from 'chromadb';
+import { OpenAI } from 'langchain/llms';
+import { ChatVectorDBQAChain } from 'langchain/chains';
+import { Chroma } from 'langchain/vectorstores';
+import { OpenAIEmbeddings } from 'langchain/embeddings';
 
-interface MyObject {
-  name: string;
-  metadata: Record<string, unknown>;
-}
+import { loader } from '../loaders';
 
-function arrayContainsName(objects: MyObject[], targetName: string): boolean {
-  const names: string[] = objects.reduce((acc: string[], curr: MyObject) => {
-    acc.push(curr.name);
-    return acc;
-  }, []);
+//Help from here
+//https://github.com/menloparklab/langchain-cohere-qdrant-doc-retrieval/blob/main/app.py
+//https://github.com/hwchase17/langchainjs/blob/main/examples/src/chains/chat_vector_db_chroma.ts
+//https://docs.trychroma.com/integrations
 
-  return names.includes(targetName);
-}
+const openAIApiKey = process.env.OPENAI_API_KEY;
 
-export type CollectionAddData = [
-  string | string[],
-  number[] | number[][] | undefined,
-  object | object[] | undefined,
-  string | string[] | undefined,
-  boolean | undefined
-];
+export const VectorStore = async () => {
+  const model = new OpenAI({ openAIApiKey });
+  const chatHistory: string[] = [];
 
-export class VectorDB {
-  private static instance: VectorDB;
-  private vectorClient: ChromaClient;
-  private embeddingService: OpenAIEmbeddingFunction;
+  return {
+    listCollections: async (store: Chroma) => {
+      const collections = await store.index?.listCollections();
+      return collections;
+    },
+    createCollection: async (name: string) => {
+      const vectorStore = new Chroma(new OpenAIEmbeddings({ openAIApiKey }), {
+        collectionName: name
+      });
 
-  constructor(
-    vectorClient: ChromaClient,
-    embeddingService: OpenAIEmbeddingFunction
-  ) {
-    this.vectorClient = vectorClient;
-    this.embeddingService = embeddingService;
-  }
+      return vectorStore;
+    },
+    addDocuments: async (file: File, store: Chroma) => {
+      const docs = await loader(file);
+      store.addDocuments(docs);
+    },
+    clearChatHistory: () => {
+      chatHistory.length = 0;
+    },
+    askQuestion: async (question: string, store: Chroma) => {
+      const chain = ChatVectorDBQAChain.fromLLM(model, store);
+      const res = await chain.call({ question, chat_history: chatHistory });
 
-  public static getInstance(
-    vectorClient: ChromaClient,
-    embeddingService: OpenAIEmbeddingFunction
-  ): VectorDB {
-    if (!VectorDB.instance) {
-      VectorDB.instance = new VectorDB(vectorClient, embeddingService);
+      chatHistory.push(res.text);
+
+      return res;
     }
-    return VectorDB.instance;
-  }
-
-  public async listCollections(): Promise<Collection[]> {
-    return await this.vectorClient.listCollections();
-  }
-
-  public async getCollection(
-    collectionName: string
-  ): Promise<Collection | null> {
-    const collection = await this.vectorClient.getCollection(
-      collectionName,
-      this.embeddingService
-    );
-
-    if (!collection) return null;
-
-    return await this.vectorClient.getCollection(
-      collectionName,
-      this.embeddingService
-    );
-  }
-
-  public async createCollection(collectionName: string): Promise<Collection> {
-    const collections = await this.vectorClient.listCollections();
-    const collectionExists = collections
-      ? arrayContainsName(collections, collectionName)
-      : false;
-
-    if (collectionExists) {
-      return await this.vectorClient.getCollection(
-        collectionName,
-        this.embeddingService
-      );
-    } else {
-      return await this.vectorClient.createCollection(
-        collectionName,
-        {},
-        this.embeddingService
-      );
-    }
-  }
-
-  public async addMemoriesToCollection(
-    collection: Collection,
-    memory: Memory
-  ): Promise<boolean> {
-    const memoryCount: number = await collection.count();
-
-    return await collection.add(
-      Array.from({ length: memory.content.length }, (_, i) =>
-        (i + memoryCount + 1).toString()
-      ),
-      undefined,
-      memory.types,
-      memory.content
-    );
-  }
-}
+  };
+};
