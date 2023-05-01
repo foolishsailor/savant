@@ -9,6 +9,9 @@ import { ConversationContainer } from './components/conversationContainer';
 import QueryInput from './components/queryInput';
 import DocumentsList from './components/documentList';
 import Header from './components/header';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 const darkTheme = createTheme({
   palette: {
     mode: 'dark'
@@ -24,8 +27,20 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider theme={darkTheme}>
+      <ToastContainer
+        position="bottom-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
       <CssBaseline />
-      <Container maxWidth="lg" sx={{}}>
+      <Container maxWidth="xl" sx={{}}>
         <PageContainer>
           <QueryContainer>
             <Header />

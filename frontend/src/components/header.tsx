@@ -6,16 +6,22 @@ import { Grid } from '@mui/material';
 const Header = () => {
   return (
     <Grid sx={{ display: 'flex', alignItems: 'center', p: 1 }}>
-      <img
-        src={logo}
-        alt="Savant"
-        style={{
-          marginRight: '1rem',
-          width: '80px', // adjust to your needs
-          height: '80px' // adjust to your needs
-        }}
-      />
-      <Typography variant="h3">Savant </Typography>
+      <Grid>
+        <img
+          src={logo}
+          alt="Savant"
+          style={{
+            marginRight: '1rem',
+            width: '80px',
+            height: '80px',
+            borderRadius: '20%'
+          }}
+        />
+      </Grid>
+      <Grid>
+        <Typography variant="h3">Savant </Typography>
+        <Typography variant="h6">The ultimate document whisperer!</Typography>
+      </Grid>
     </Grid>
   );
 };

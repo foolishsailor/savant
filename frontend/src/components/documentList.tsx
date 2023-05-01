@@ -10,26 +10,19 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import UploadModal from './uploadModal';
+import FileIcon from './fileIcon';
 
 const DocumentsList = () => {
-  const [documentsToUpload, setDocumentsToUpload] = useState<any[]>([]);
-  const [documentsUploaded, setDocumentsUploaded] = useState<any[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [documentsUploaded, setDocumentsUploaded] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
 
-  const addDocument = async (file: File) => {
-    try {
-      // Call the addDocuments API endpoint with the file
-      // Replace this code with the correct implementation to handle file uploads
-      const result = await fetch('http://localhost:4000/addDocuments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documents: [file.name] })
-      });
-      const data = await result.json();
-      setDocumentsToUpload(data);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const documentsUploadHandler = (documents: string[]) => {
+    setDocumentsUploaded(documents);
   };
 
   const deleteDocument = async (index: number) => {
@@ -39,40 +32,9 @@ const DocumentsList = () => {
         { method: 'DELETE' }
       );
       const data = await result.json();
-      setDocumentsToUpload(data);
+      setDocumentsUploaded(data);
     } catch (error) {
       console.error(error);
-    }
-  };
-
-  const handleUpload = async () => {
-    const formData = new FormData();
-    documentsToUpload.forEach((file) => {
-      formData.append('files', file);
-    });
-
-    try {
-      const response = await fetch('http://localhost:4000/addDocuments', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (response.ok) {
-        console.log('Files uploaded successfully');
-      } else {
-        console.error('Error uploading files');
-      }
-    } catch (error) {
-      console.error('Error uploading files', error);
-    }
-
-    setDocumentsToUpload([]);
-  };
-
-  const handleFileInputChange = () => {
-    if (fileInputRef.current && fileInputRef.current.files) {
-      const newDocuments = Array.from(fileInputRef.current.files);
-      setDocumentsToUpload([...documentsToUpload, ...newDocuments]);
     }
   };
 
@@ -90,16 +52,21 @@ const DocumentsList = () => {
       }}
     >
       <List>
-        {documentsToUpload.map((doc, index) => (
+        {documentsUploaded.map((doc, index) => (
           <ListItem key={index}>
-            <ListItemText primary={`${doc.name} (${doc.type})`} />
+            <Grid sx={{ mr: 1 }}>
+              <FileIcon fileName={doc} />
+            </Grid>
+            <ListItemText primary={doc} />
             <ListItemSecondaryAction>
               <IconButton
                 edge="end"
                 aria-label="delete"
                 onClick={() => deleteDocument(index)}
               >
-                <DeleteIcon />
+                <Grid sx={{ ml: 1 }}>
+                  <DeleteIcon />
+                </Grid>
               </IconButton>
             </ListItemSecondaryAction>
           </ListItem>
@@ -109,17 +76,15 @@ const DocumentsList = () => {
         variant="contained"
         startIcon={<AddIcon />}
         component="label"
-        onClick={handleUpload}
+        onClick={() => setOpen(true)}
       >
         Add Document
-        <input
-          type="file"
-          hidden
-          multiple
-          ref={fileInputRef}
-          onChange={handleFileInputChange}
-        />
       </Button>
+      <UploadModal
+        open={open}
+        onClose={handleClose}
+        onUploadDocuments={documentsUploadHandler}
+      />
     </Grid>
   );
 };
