@@ -1,4 +1,4 @@
-![savant-logo](./public/assets/logo512.png)
+![savant-logo](./frontend/public/assets/logo512.png)
 
 # Savant: ask me a question Ill tell you no lies.
 
