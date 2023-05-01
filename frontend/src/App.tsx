@@ -14,6 +14,17 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ReactMarkdown from 'react-markdown';
+import { QueryContainer } from './components/queryContainer';
+import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { PageContainer } from './components/pageContainer';
+import { DocumentContainer } from './components/documentContainer';
+import { ConversationContainer } from './components/conversationContainer';
+import QueryInput from './components/queryInput';
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark'
+  }
+});
 
 const App: React.FC = () => {
   const [documents, setDocuments] = useState<any[]>([]);
@@ -64,54 +75,51 @@ const App: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md">
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <ReactMarkdown>{response}</ReactMarkdown>
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <List>
-            {documents.map((doc, index) => (
-              <ListItem key={index}>
-                <ListItemText primary={`${doc.name} (${doc.type})`} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => deleteDocument(index)}
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
-          </List>
-          <Button variant="contained" startIcon={<AddIcon />} component="label">
-            Add Document
-            <input
-              type="file"
-              hidden
-              onChange={(e) => e.target.files && addDocument(e.target.files[0])}
-            />
-          </Button>
-        </Grid>
-      </Grid>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <TextField
-            fullWidth
-            label="Query"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <Button variant="contained" color="primary" onClick={queryDocuments}>
-            Query
-          </Button>
-        </Grid>
-      </Grid>
-    </Container>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Container maxWidth="lg" sx={{}}>
+        <PageContainer>
+          <QueryContainer>
+            <ConversationContainer>
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </ConversationContainer>
+            <QueryInput />
+          </QueryContainer>
+          <DocumentContainer>
+            <List>
+              {documents.map((doc, index) => (
+                <ListItem key={index}>
+                  <ListItemText primary={`${doc.name} (${doc.type})`} />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => deleteDocument(index)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              component="label"
+            >
+              Add Document
+              <input
+                type="file"
+                hidden
+                onChange={(e) =>
+                  e.target.files && addDocument(e.target.files[0])
+                }
+              />
+            </Button>
+          </DocumentContainer>
+        </PageContainer>
+      </Container>
+    </ThemeProvider>
   );
 };
 
