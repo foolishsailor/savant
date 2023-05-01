@@ -1,13 +1,16 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import multer from 'multer';
+import * as dotenv from 'dotenv';
 
-//https://medium.com/geekculture/automating-pdf-interaction-with-langchain-and-chatgpt-e723337f26a6
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 4000;
+const upload = multer();
 
-const savedDocuments: File[] = [];
+const savedDocuments: Express.Multer.File[] = [];
 app.use(bodyParser.json());
 app.use(cors());
 app.use(cors());
@@ -16,21 +19,19 @@ app.get('/test', (_req, res) => {
   res.send('Hello World!');
 });
 
-// addDocuments endpoint
-app.post('/addDocuments', (req, res) => {
-  const { documents } = req.body;
+app.post('/addDocuments', upload.array('documents'), (req, res) => {
+  const documents = req.files as Express.Multer.File[];
 
   savedDocuments.push(...documents);
 
   const uploadedDocuments = documentLoader(documents);
-  res.json(uploadedDocuments);
+
+  res.json(savedDocuments.map((file) => file.originalname));
 });
 
-// askQuestion endpoint
 app.post('/askQuestion', (req, res) => {
   const { question } = req.body;
-  // Call the queryDocuments function with the provided question
-  // and send the resulting markup string as the response
+
   const markup = queryDocuments(question);
   res.json({ response: markup });
 });
@@ -38,30 +39,25 @@ app.post('/askQuestion', (req, res) => {
 // deleteDocument endpoint
 app.delete('/deleteDocument/:index', (req, res) => {
   const index = parseInt(req.params.index);
-  // Call the deleteDocument function with the provided index
-  // and send the updated documents array as the response
+
   const updatedDocuments = deleteDocument(index);
   res.json(updatedDocuments);
 });
 
-// clearDocuments endpoint
 app.delete('/clearDocuments', (_req, res) => {
-  // Call the clearDocuments function and send the updated
-  // (empty) documents array as the response
   const clearedDocuments = clearDocuments();
   res.json(clearedDocuments);
 });
 
-// Start the server
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}`);
 });
 
 // Dummy functions for demonstration purposes
 // Replace these with your actual implementation
-function documentLoader(files: File[]): string[] {
+function documentLoader(files: Express.Multer.File[]): string[] {
   // Extract file names from the array of files
-  const fileNames = files.map((file) => file.name);
+  const fileNames = files.map((file) => file.originalname);
 
   return fileNames;
 }

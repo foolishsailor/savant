@@ -14,8 +14,9 @@ const loader = new DirectoryLoader(
     '.json': (path) => new JSONLoader(path, '/texts'),
     '.jsonl': (path) => new JSONLinesLoader(path, '/html'),
     '.txt': (path) => new TextLoader(path),
-    '.csv': (path) => new PDFLoader(path),
-    '.docx': (path) => new DocxLoader(path)
+    '.csv': (path) => new CSVLoader(path),
+    '.docx': (path) => new DocxLoader(path),
+    '.pdf': (path) => new PDFLoader(path)
   }
 );
 const docs = await loader.load();
