@@ -1,4 +1,4 @@
-import { Grid, useTheme } from '@mui/material';
+import { Grid, useTheme, Typography } from '@mui/material';
 import { Message } from '../types/message';
 import Markdown from './markdown';
 interface Props {
@@ -38,6 +38,7 @@ const ConversationList = ({ messages }: Props) => {
             boxShadow: 1
           }}
         >
+          <Typography>**Revising...**</Typography>
           <Markdown message={message.content} />
         </Grid>
       ))}

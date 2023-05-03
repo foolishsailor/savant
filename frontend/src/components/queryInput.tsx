@@ -15,7 +15,6 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   };
 
   const queryDocuments = async () => {
-    console.log('query DOcuments ======================');
     addResponse((prev) => [...prev, { source: 'user', content: inputText }]);
     addResponse((prev) => [...prev, { source: 'assistant', content: '' }]);
     setInputText('');
@@ -44,10 +43,16 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             const decodedChunk = new TextDecoder().decode(value);
 
             addResponse((prev) => {
+              const commandFilteredOut = decodedChunk
+                .split('c0fb7f7030574dd7801ae6f2d53dfd51')
+                .join('');
               const lastElementIndex = prev.length - 1;
               const updatedAssistantMessage: Message = {
                 source: 'assistant',
-                content: prev[lastElementIndex].content + decodedChunk
+                content:
+                  decodedChunk === 'c0fb7f7030574dd7801ae6f2d53dfd51'
+                    ? (prev[lastElementIndex].content = '')
+                    : prev[lastElementIndex].content + commandFilteredOut
               };
               const newConversation = [...prev];
               newConversation[lastElementIndex] = updatedAssistantMessage;
