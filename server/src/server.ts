@@ -60,7 +60,7 @@ dotenv.config();
     });
 
     await vectorStore.askQuestion(question, store, systemPrompt);
-    res.end('===================================================');
+    res.end();
   });
 
   // deleteDocument endpoint

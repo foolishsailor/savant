@@ -2,14 +2,15 @@ import { OpenAI } from 'langchain/llms/openai';
 import { RetrievalQAChain, loadQARefineChain } from 'langchain/chains';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import {
-  BaseCallbackHandler,
-  CallbackManager,
-  ConsoleCallbackHandler
-} from 'langchain/callbacks';
+import { BaseCallbackHandler } from 'langchain/callbacks';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
-import { AgentAction, AgentFinish, ChainValues } from 'langchain/schema';
+import {
+  AgentAction,
+  AgentFinish,
+  ChainValues,
+  LLMResult
+} from 'langchain/schema';
 
 //Help from here
 //https://github.com/menloparklab/langchain-cohere-qdrant-doc-retrieval/blob/main/app.py
@@ -38,12 +39,20 @@ class MyCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleText(text: string) {
-    console.log('===== stream text', text);
-    customCallback && customCallback(text);
+    console.log('handleText', text);
   }
 
   async handleAgentEnd(action: AgentFinish) {
     console.log('Agent action end', action.log);
+  }
+
+  async handleLLMEnd(output: LLMResult) {
+    console.log('LLM end', JSON.stringify(output));
+  }
+
+  async handleLLMNewToken(token: string) {
+    console.log('token', token);
+    customCallback && customCallback(token);
   }
 }
 
@@ -60,12 +69,6 @@ export const VectorStore = async () => {
     streaming: true,
     verbose: false
     //callbacks: [new MyCallbackHandler()]
-    // callbackManager: CallbackManager.fromHandlers({
-    //   async handleLLMNewToken(token: string) {
-    //     console.log('token', token);
-    //     customCallback && customCallback(token);
-    //   }
-    // })
   });
   const chatHistory: string[] = [];
 
@@ -128,10 +131,15 @@ export const VectorStore = async () => {
         chat_history: [chatHistory]
       });
 
-      const chain = new RetrievalQAChain({
-        combineDocumentsChain: loadQARefineChain(model),
-        retriever: store.asRetriever()
-      });
+      // //Produces multiple answers - need a trigger to replace text as its refining....
+      // const chain = new RetrievalQAChain({
+      //   combineDocumentsChain: loadQARefineChain(model),
+
+      //   retriever: store.asRetriever()
+      // });
+
+      //Produices simple answer
+      const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
 
       const res = await chain.call(
         {
@@ -140,8 +148,7 @@ export const VectorStore = async () => {
         },
         [new MyCallbackHandler()]
       );
-
-      console.log('total output=======', res.output_text);
+      console.log('total output=======', res);
       chatHistory.push(res.output_text);
     }
   };
