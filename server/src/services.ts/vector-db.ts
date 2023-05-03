@@ -22,23 +22,23 @@ class MyCallbackHandler extends BaseCallbackHandler {
   name = 'MyCallbackHandler';
 
   async handleChainStart(chain: { name: string }) {
-    console.log(`Entering new ${chain.name} chain...`);
+    console.log(`===== Entering new ${chain.name} chain...`);
   }
 
   async handleChainEnd(_output: ChainValues) {
-    console.log('Finished chain.', _output);
+    console.log('===== Finished chain.', _output);
   }
 
   async handleAgentAction(action: AgentAction) {
-    console.log('action', action.log);
+    console.log('===== action', action.log);
   }
 
   async handleToolEnd(output: string) {
-    console.log('Tool End', output);
+    console.log('===== Tool End', output);
   }
 
   async handleText(text: string) {
-    console.log('stream text', text);
+    console.log('===== stream text', text);
     customCallback && customCallback(text);
   }
 
@@ -58,8 +58,8 @@ export const VectorStore = async () => {
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: process.env.DEFAULT_OPENAI_MODEL,
     streaming: true,
-    verbose: false,
-    callbacks: [new MyCallbackHandler()]
+    verbose: false
+    //callbacks: [new MyCallbackHandler()]
     // callbackManager: CallbackManager.fromHandlers({
     //   async handleLLMNewToken(token: string) {
     //     console.log('token', token);
@@ -133,10 +133,13 @@ export const VectorStore = async () => {
         retriever: store.asRetriever()
       });
 
-      const res = await chain.call({
-        chainType: 'stuff',
-        query: prompt
-      });
+      const res = await chain.call(
+        {
+          chainType: 'stuff',
+          query: prompt
+        },
+        [new MyCallbackHandler()]
+      );
 
       console.log('total output=======', res.output_text);
       chatHistory.push(res.output_text);

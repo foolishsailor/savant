@@ -54,7 +54,7 @@ const App: React.FC = () => {
               <ConversationList messages={conversation} />
             </ConversationContainer>
             <QueryInput
-              addResponse={responseHandler}
+              addResponse={setConversation}
               systemPrompt={systemPrompt}
             />
           </QueryContainer>

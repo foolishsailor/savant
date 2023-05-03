@@ -3,7 +3,7 @@ import { TextField, Button, Grid } from '@mui/material';
 import { Message } from '../types/message';
 
 export interface QueryInputProps {
-  addResponse: (response: Message) => void;
+  addResponse: React.Dispatch<React.SetStateAction<Message[]>>;
   systemPrompt: string;
 }
 
@@ -15,7 +15,9 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   };
 
   const queryDocuments = async () => {
-    addResponse({ source: 'user', content: inputText });
+    console.log('query DOcuments ======================');
+    addResponse((prev) => [...prev, { source: 'user', content: inputText }]);
+    addResponse((prev) => [...prev, { source: 'assistant', content: '' }]);
     setInputText('');
 
     try {
@@ -26,8 +28,6 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
       });
       // Read the response body as a stream
       const reader = result.body?.getReader();
-
-      let receivedData = '';
 
       // Function to process the stream
       const readStream = async () => {
@@ -41,12 +41,18 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             }
 
             // Decode the received chunk and add it to the receivedData string
-            receivedData += new TextDecoder().decode(value);
+            const decodedChunk = new TextDecoder().decode(value);
 
-            // Parse the JSON data and update the component state
-            const parsedData = JSON.parse(receivedData);
-            console.log('response from server: ', parsedData.response);
-            addResponse({ source: 'assistant', content: parsedData.response });
+            addResponse((prev) => {
+              const lastElementIndex = prev.length - 1;
+              const updatedAssistantMessage: Message = {
+                source: 'assistant',
+                content: prev[lastElementIndex].content + decodedChunk
+              };
+              const newConversation = [...prev];
+              newConversation[lastElementIndex] = updatedAssistantMessage;
+              return newConversation;
+            });
 
             // Continue reading the stream
             readStream();
@@ -102,4 +108,4 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   );
 };
 
-export default QueryInput;
+export default React.memo(QueryInput);
