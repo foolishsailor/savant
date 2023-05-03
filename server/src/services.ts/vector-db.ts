@@ -5,17 +5,6 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { StreamingCallbackHandler } from '@/langchain/callbacks/streaming-callback-handler';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
-import {
-  AgentAction,
-  AgentFinish,
-  ChainValues,
-  LLMResult
-} from 'langchain/schema';
-
-//Help from here
-//https://github.com/menloparklab/langchain-cohere-qdrant-doc-retrieval/blob/main/app.py
-//https://github.com/hwchase17/langchainjs/blob/main/examples/src/chains/chat_vector_db_chroma.ts
-//https://docs.trychroma.com/integrations
 
 export const VectorStore = async () => {
   const model = new OpenAI({

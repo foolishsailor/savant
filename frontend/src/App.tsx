@@ -12,6 +12,8 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ConversationList from './components/conversationList';
 import { Message } from './types/message';
+import { SettingContainer } from './components/settingContainer';
+import { SidebarContainer } from './components/sidebarContainer';
 
 const darkTheme = createTheme({
   palette: {
@@ -58,9 +60,12 @@ const App: React.FC = () => {
               systemPrompt={systemPrompt}
             />
           </QueryContainer>
-          <DocumentContainer>
-            <DocumentsList />
-          </DocumentContainer>
+          <SidebarContainer>
+            <DocumentContainer>
+              <DocumentsList />
+            </DocumentContainer>
+            <SettingContainer />
+          </SidebarContainer>
         </PageContainer>
       </Container>
     </ThemeProvider>

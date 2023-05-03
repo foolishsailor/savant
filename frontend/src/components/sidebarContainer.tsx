@@ -2,11 +2,11 @@ import { ReactNode } from 'react';
 import { Grid } from '@mui/material';
 import { useTheme } from '@mui/system';
 
-export interface DocumentContainerProps {
+export interface SidebarContainerProps {
   children?: ReactNode;
 }
 
-export const DocumentContainer = ({ children }: DocumentContainerProps) => {
+export const SidebarContainer = ({ children }: SidebarContainerProps) => {
   const theme = useTheme();
   return (
     <Grid
@@ -14,8 +14,7 @@ export const DocumentContainer = ({ children }: DocumentContainerProps) => {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        flex: 3,
-        p: 1,
+        flex: 1,
         flexWrap: 'nowrap',
         minWidth: 200,
         justifyContent: 'center',

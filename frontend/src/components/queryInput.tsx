@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { TextField, Button, Grid } from '@mui/material';
+import {
+  Box,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Slider,
+  TextField,
+  Button,
+  Grid
+} from '@mui/material';
+
 import { Message } from '../types/message';
 
 export interface QueryInputProps {
@@ -104,10 +114,41 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
           sx={{ label: { color: '#888' } }}
         />
       </Grid>
-      <Grid item sx={{}}>
-        <Button variant="contained" color="primary" onClick={queryDocuments}>
-          Send
-        </Button>
+      <Grid item container spacing={1} alignItems="center">
+        <Grid item xs={6}>
+          <Slider
+            defaultValue={0.5}
+            min={0}
+            step={0.1}
+            max={1}
+            valueLabelDisplay="auto"
+            marks={[
+              { value: 0, label: 'precise' },
+              { value: 0.5, label: 'neutral' },
+              { value: 1, label: 'creative' }
+            ]}
+            sx={{ width: '100%' }}
+          />
+        </Grid>
+        <Grid item xs={4}>
+          <RadioGroup row defaultValue="simple">
+            <FormControlLabel
+              value="simple"
+              control={<Radio />}
+              label="Simple"
+            />
+            <FormControlLabel
+              value="revision"
+              control={<Radio />}
+              label="Revision"
+            />
+          </RadioGroup>
+        </Grid>
+        <Grid item xs={2} container justifyContent="flex-end">
+          <Button variant="contained" color="primary" onClick={queryDocuments}>
+            Send
+          </Button>
+        </Grid>
       </Grid>
     </Grid>
   );
