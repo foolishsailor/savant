@@ -5,6 +5,7 @@ import multer from 'multer';
 import * as dotenv from 'dotenv';
 import { VectorStore } from './services.ts/vector-db';
 import { ChromaClient } from 'chromadb';
+import { Readable } from 'stream';
 
 dotenv.config();
 
@@ -44,10 +45,22 @@ dotenv.config();
   });
 
   app.post('/askQuestion', async (req, res) => {
+    console.log('ask question');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Transfer-Encoding', 'chunked');
     const { question, systemPrompt } = req.body;
+    const stream = new Readable({
+      read() {}
+    });
 
-    const markup = await queryDocuments(question, systemPrompt);
-    res.json({ response: markup });
+    stream.pipe(res);
+
+    vectorStore.setCallback((token: string) => {
+      stream.push(token);
+    });
+
+    await vectorStore.askQuestion(question, store, systemPrompt);
+    res.end('===================================================');
   });
 
   // deleteDocument endpoint
@@ -79,13 +92,6 @@ dotenv.config();
 
     return fileNames;
   }
-
-  const queryDocuments = async (
-    question: string,
-    systemPrompt: string
-  ): Promise<string> => {
-    return await vectorStore.askQuestion(question, store, systemPrompt);
-  };
 
   function deleteDocument(index: number): any[] {
     // Delete the document at the given index

@@ -1,24 +1,51 @@
 import { OpenAI } from 'langchain/llms/openai';
-import {
-  ChatVectorDBQAChain,
-  RetrievalQAChain,
-  loadQARefineChain
-} from 'langchain/chains';
+import { RetrievalQAChain, loadQARefineChain } from 'langchain/chains';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-
-import { loader } from '../loaders';
 import {
-  ChatPromptTemplate,
-  HumanMessagePromptTemplate,
-  PromptTemplate,
-  SystemMessagePromptTemplate
-} from 'langchain/prompts';
+  BaseCallbackHandler,
+  CallbackManager,
+  ConsoleCallbackHandler
+} from 'langchain/callbacks';
+import { loader } from '../loaders';
+import { PromptTemplate } from 'langchain/prompts';
+import { AgentAction, AgentFinish, ChainValues } from 'langchain/schema';
 
 //Help from here
 //https://github.com/menloparklab/langchain-cohere-qdrant-doc-retrieval/blob/main/app.py
 //https://github.com/hwchase17/langchainjs/blob/main/examples/src/chains/chat_vector_db_chroma.ts
 //https://docs.trychroma.com/integrations
+
+let customCallback: ((token: string) => void) | null = null;
+
+class MyCallbackHandler extends BaseCallbackHandler {
+  name = 'MyCallbackHandler';
+
+  async handleChainStart(chain: { name: string }) {
+    console.log(`Entering new ${chain.name} chain...`);
+  }
+
+  async handleChainEnd(_output: ChainValues) {
+    console.log('Finished chain.', _output);
+  }
+
+  async handleAgentAction(action: AgentAction) {
+    console.log('action', action.log);
+  }
+
+  async handleToolEnd(output: string) {
+    console.log('Tool End', output);
+  }
+
+  async handleText(text: string) {
+    console.log('stream text', text);
+    customCallback && customCallback(text);
+  }
+
+  async handleAgentEnd(action: AgentFinish) {
+    console.log('Agent action end', action.log);
+  }
+}
 
 export const VectorStore = async () => {
   console.log('openAIApiKey', process.env.OPENAI_API_KEY);
@@ -26,14 +53,26 @@ export const VectorStore = async () => {
     'process.env.DEFAULT_OPENAI_MODEL',
     process.env.DEFAULT_OPENAI_MODEL
   );
+
   const model = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: process.env.DEFAULT_OPENAI_MODEL,
-    streaming: true
+    streaming: true,
+    verbose: false,
+    callbacks: [new MyCallbackHandler()]
+    // callbackManager: CallbackManager.fromHandlers({
+    //   async handleLLMNewToken(token: string) {
+    //     console.log('token', token);
+    //     customCallback && customCallback(token);
+    //   }
+    // })
   });
   const chatHistory: string[] = [];
 
   return {
+    setCallback: (callback: (token: string) => void) => {
+      customCallback = callback;
+    },
     listCollections: async (store: Chroma) => {
       const collections = await store.index?.listCollections();
       return collections;
@@ -54,7 +93,6 @@ export const VectorStore = async () => {
 
       const docs = await loader(file);
 
-      console.log('docs ========', docs);
       await store.addDocuments(docs);
 
       console.log('await docs added');
@@ -90,7 +128,6 @@ export const VectorStore = async () => {
         chat_history: [chatHistory]
       });
 
-      console.log('prompt', prompt);
       const chain = new RetrievalQAChain({
         combineDocumentsChain: loadQARefineChain(model),
         retriever: store.asRetriever()
@@ -101,27 +138,8 @@ export const VectorStore = async () => {
         query: prompt
       });
 
+      console.log('total output=======', res.output_text);
       chatHistory.push(res.output_text);
-
-      console.log('res--- ', res);
-      console.log('chatHistory--- ', chatHistory);
-
-      return res.output_text;
-
-      // const chain = ChatVectorDBQAChain.fromLLM(model, store, {
-      //   qaTemplate: prompt
-      // });
-      // const res = await chain.call({
-      //   question,
-      //   chat_history: [chatHistory]
-      // });
-
-      // chatHistory.push(res.text);
-
-      // console.log('res--- ', res);
-      // console.log('chatHistory--- ', chatHistory);
-
-      // return res.text;
     }
   };
 };
