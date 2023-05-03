@@ -61,6 +61,8 @@ export const VectorStore = async () => {
       systemPrompt: string,
       callback: (token: string) => void
     ) => {
+      StreamingCallbackHandler.setStreamCallback(callback);
+
       const chatPrompt = PromptTemplate.fromTemplate(
         ` ${systemPrompt}
         You are an AI assistant. You will be asked questions about the given documents, you can only use the given documents for information.  You can use your
@@ -84,17 +86,14 @@ export const VectorStore = async () => {
         chat_history: [chatHistory]
       });
 
-      // //Produces multiple answers - need a trigger to replace text as its refining....
-      // const chain = new RetrievalQAChain({
-      //   combineDocumentsChain: loadQARefineChain(model),
-
-      //   retriever: store.asRetriever()
-      // });
+      //Produces multiple answers - need a trigger to replace text as its refining....
+      const chain = new RetrievalQAChain({
+        combineDocumentsChain: loadQARefineChain(model),
+        retriever: store.asRetriever()
+      });
 
       //Produices simple answer
-      const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
-
-      StreamingCallbackHandler.setCallback(callback);
+      //const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
 
       const res = await chain.call(
         {
@@ -103,6 +102,7 @@ export const VectorStore = async () => {
         },
         [new StreamingCallbackHandler()]
       );
+
       console.log('total output=======', res);
       chatHistory.push(res.output_text);
     }

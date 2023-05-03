@@ -8,44 +8,64 @@ import {
 
 class StreamingCallbackHandler extends BaseCallbackHandler {
   name = 'StreamingCallbackHandler';
-  private static callback?: (token: string) => void;
+  private static streamCallback?: (token: string) => void;
 
-  static setCallback(callback: (token: string) => void) {
-    StreamingCallbackHandler.callback = callback;
+  static setStreamCallback(callback: (token: string) => void) {
+    StreamingCallbackHandler.streamCallback = callback;
   }
 
   async handleChainStart(chain: { name: string }) {
-    console.log(`===== Entering new ${chain.name} chain...`);
+    console.log(
+      `====================================== Entering new ${chain.name} chain...`
+    );
+
+    if (
+      StreamingCallbackHandler.streamCallback &&
+      process.env.CHAIN_END_TRIGGER_MESSAGE
+    ) {
+      StreamingCallbackHandler.streamCallback(
+        process.env.CHAIN_END_TRIGGER_MESSAGE
+      );
+    }
   }
 
   async handleChainEnd(_output: ChainValues) {
-    console.log('===== Finished chain.', _output);
+    console.log(
+      '====================================== Finished chain.',
+      _output
+    );
   }
 
   async handleAgentAction(action: AgentAction) {
-    console.log('===== action', action.log);
+    console.log('======================================= action', action.log);
   }
 
   async handleToolEnd(output: string) {
-    console.log('===== Tool End', output);
+    console.log('===================================== Tool End', output);
   }
 
   async handleText(text: string) {
-    console.log('handleText', text);
+    console.log('====================================== handleText', text);
   }
 
   async handleAgentEnd(action: AgentFinish) {
-    console.log('Agent action end', action.log);
+    console.log(
+      '===================================== Agent action end',
+      action.log
+    );
   }
 
   async handleLLMEnd(output: LLMResult) {
-    console.log('LLM end', JSON.stringify(output));
+    console.log(
+      '===================================== LLM end',
+      JSON.stringify(output)
+    );
   }
 
   async handleLLMNewToken(token: string) {
-    console.log('token', token);
-    StreamingCallbackHandler.callback &&
-      StreamingCallbackHandler.callback(token);
+    //console.log('token', token);
+    StreamingCallbackHandler.streamCallback &&
+      StreamingCallbackHandler.streamCallback(token);
   }
 }
 
