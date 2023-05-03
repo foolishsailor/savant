@@ -18,9 +18,6 @@ dotenv.config();
   const store = await vectorStore.createCollection('test_document_store');
   const collections = await vectorStore.listCollections(store);
 
-  console.log('store', store);
-  console.log('collections', collections);
-
   const app = express();
   const port = process.env.PORT || 4000;
   const upload = multer();
@@ -30,24 +27,20 @@ dotenv.config();
   app.use(cors());
   app.use(cors());
 
-  app.get('/test', (_req, res) => {
-    res.send('Hello World!');
-  });
-
   app.post('/addDocuments', upload.array('documents'), (req, res) => {
     const documents = req.files as Express.Multer.File[];
 
     savedDocuments.push(...documents);
 
-    const uploadedDocuments = documentLoader(documents);
+    documentLoader(documents);
 
     res.json(savedDocuments.map((file) => file.originalname));
   });
 
   app.post('/askQuestion', async (req, res) => {
-    console.log('ask question');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
+
     const { question, systemPrompt } = req.body;
     const stream = new Readable({
       read() {}
@@ -55,11 +48,16 @@ dotenv.config();
 
     stream.pipe(res);
 
-    vectorStore.setCallback((token: string) => {
+    const streamCallback = (token: string) => {
       stream.push(token);
-    });
+    };
 
-    await vectorStore.askQuestion(question, store, systemPrompt);
+    await vectorStore.askQuestion(
+      question,
+      store,
+      systemPrompt,
+      streamCallback
+    );
     res.end();
   });
 
@@ -80,14 +78,11 @@ dotenv.config();
     console.log(`Server running at http://localhost:${port}`);
   });
 
-  // Dummy functions for demonstration purposes
-  // Replace these with your actual implementation
   function documentLoader(files: Express.Multer.File[]): string[] {
     files.forEach(async (file: Express.Multer.File) => {
       await vectorStore.addDocuments(file, store);
     });
 
-    // Extract file names from the array of files
     const fileNames = files.map((file) => file.originalname);
 
     return fileNames;

@@ -2,7 +2,7 @@ import { OpenAI } from 'langchain/llms/openai';
 import { RetrievalQAChain, loadQARefineChain } from 'langchain/chains';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { BaseCallbackHandler } from 'langchain/callbacks';
+import { StreamingCallbackHandler } from '@/langchain/callbacks/streaming-callback-handler';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
 import {
@@ -17,65 +17,17 @@ import {
 //https://github.com/hwchase17/langchainjs/blob/main/examples/src/chains/chat_vector_db_chroma.ts
 //https://docs.trychroma.com/integrations
 
-let customCallback: ((token: string) => void) | null = null;
-
-class MyCallbackHandler extends BaseCallbackHandler {
-  name = 'MyCallbackHandler';
-
-  async handleChainStart(chain: { name: string }) {
-    console.log(`===== Entering new ${chain.name} chain...`);
-  }
-
-  async handleChainEnd(_output: ChainValues) {
-    console.log('===== Finished chain.', _output);
-  }
-
-  async handleAgentAction(action: AgentAction) {
-    console.log('===== action', action.log);
-  }
-
-  async handleToolEnd(output: string) {
-    console.log('===== Tool End', output);
-  }
-
-  async handleText(text: string) {
-    console.log('handleText', text);
-  }
-
-  async handleAgentEnd(action: AgentFinish) {
-    console.log('Agent action end', action.log);
-  }
-
-  async handleLLMEnd(output: LLMResult) {
-    console.log('LLM end', JSON.stringify(output));
-  }
-
-  async handleLLMNewToken(token: string) {
-    console.log('token', token);
-    customCallback && customCallback(token);
-  }
-}
-
 export const VectorStore = async () => {
-  console.log('openAIApiKey', process.env.OPENAI_API_KEY);
-  console.log(
-    'process.env.DEFAULT_OPENAI_MODEL',
-    process.env.DEFAULT_OPENAI_MODEL
-  );
-
   const model = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: process.env.DEFAULT_OPENAI_MODEL,
     streaming: true,
-    verbose: false
-    //callbacks: [new MyCallbackHandler()]
+    verbose: true,
+    temperature: 0.5
   });
   const chatHistory: string[] = [];
 
   return {
-    setCallback: (callback: (token: string) => void) => {
-      customCallback = callback;
-    },
     listCollections: async (store: Chroma) => {
       const collections = await store.index?.listCollections();
       return collections;
@@ -106,7 +58,8 @@ export const VectorStore = async () => {
     askQuestion: async (
       question: string,
       store: Chroma,
-      systemPrompt: string
+      systemPrompt: string,
+      callback: (token: string) => void
     ) => {
       const chatPrompt = PromptTemplate.fromTemplate(
         ` ${systemPrompt}
@@ -141,12 +94,14 @@ export const VectorStore = async () => {
       //Produices simple answer
       const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
 
+      StreamingCallbackHandler.setCallback(callback);
+
       const res = await chain.call(
         {
           chainType: 'stuff',
           query: prompt
         },
-        [new MyCallbackHandler()]
+        [new StreamingCallbackHandler()]
       );
       console.log('total output=======', res);
       chatHistory.push(res.output_text);
