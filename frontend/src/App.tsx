@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Container } from '@mui/material';
-import ReactMarkdown from 'react-markdown';
 import { QueryContainer } from './components/queryContainer';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { PageContainer } from './components/pageContainer';
@@ -11,6 +10,8 @@ import DocumentsList from './components/documentList';
 import Header from './components/header';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ConversationList from './components/conversationList';
+import { Message } from './types/message';
 
 const darkTheme = createTheme({
   palette: {
@@ -19,10 +20,15 @@ const darkTheme = createTheme({
 });
 
 const App: React.FC = () => {
-  const [response, setResponse] = useState('');
+  const [conversation, setConversation] = useState<Message[]>([]);
+  const [systemPrompt, setSystemPrompt] = useState<string>('');
 
-  const responseHandler = (response: string) => {
-    setResponse(response);
+  const responseHandler = (response: Message) => {
+    setConversation((prev) => [...prev, response]);
+  };
+
+  const systemPromptHandler = (prompt: string) => {
+    setSystemPrompt(prompt);
   };
 
   return (
@@ -40,14 +46,17 @@ const App: React.FC = () => {
         theme="colored"
       />
       <CssBaseline />
-      <Container maxWidth="xl" sx={{}}>
+      <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
         <PageContainer>
           <QueryContainer>
-            <Header />
+            <Header onUpdateSystemPrompt={systemPromptHandler} />
             <ConversationContainer>
-              <ReactMarkdown>{response}</ReactMarkdown>
+              <ConversationList messages={conversation} />
             </ConversationContainer>
-            <QueryInput onResponse={responseHandler} />
+            <QueryInput
+              addResponse={responseHandler}
+              systemPrompt={systemPrompt}
+            />
           </QueryContainer>
           <DocumentContainer>
             <DocumentsList />

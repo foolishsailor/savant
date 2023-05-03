@@ -10,9 +10,9 @@
     "emitDecoratorMetadata": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["server/src/*"]
+      "@/*": ["src/*"]
     }
   },
-  "include": ["server/src/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

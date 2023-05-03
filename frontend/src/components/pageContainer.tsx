@@ -12,6 +12,7 @@ export const PageContainer = ({ children }: PageContainerProps) => {
       columnGap={1}
       sx={{
         minHeight: '100vh',
+        maxHeight: '100vh',
         display: 'flex',
         justifyContent: 'center',
         flexDirection: 'row',

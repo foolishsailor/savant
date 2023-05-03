@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid } from '@mui/material';
+import { Message } from '../types/message';
 
 export interface QueryInputProps {
-  onResponse: (response: string) => void;
+  addResponse: (response: Message) => void;
+  systemPrompt: string;
 }
 
-const QueryInput = ({ onResponse }: QueryInputProps) => {
+const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   const [inputText, setInputText] = useState('');
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -13,15 +15,49 @@ const QueryInput = ({ onResponse }: QueryInputProps) => {
   };
 
   const queryDocuments = async () => {
+    addResponse({ source: 'user', content: inputText });
+    setInputText('');
+
     try {
       const result = await fetch('http://localhost:4000/askQuestion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: inputText })
+        body: JSON.stringify({ question: inputText, systemPrompt })
       });
-      const data = await result.json();
+      // Read the response body as a stream
+      const reader = result.body?.getReader();
 
-      onResponse(data.response);
+      let receivedData = '';
+
+      // Function to process the stream
+      const readStream = async () => {
+        if (reader) {
+          try {
+            const { done, value } = await reader.read();
+
+            if (done) {
+              console.log('Stream finished');
+              return;
+            }
+
+            // Decode the received chunk and add it to the receivedData string
+            receivedData += new TextDecoder().decode(value);
+
+            // Parse the JSON data and update the component state
+            const parsedData = JSON.parse(receivedData);
+            console.log('response from server: ', parsedData.response);
+            addResponse({ source: 'assistant', content: parsedData.response });
+
+            // Continue reading the stream
+            readStream();
+          } catch (error) {
+            console.error('Error while reading the stream: ', error);
+          }
+        }
+      };
+
+      // Start reading the stream
+      readStream();
     } catch (error) {
       console.error(error);
     }
@@ -37,7 +73,7 @@ const QueryInput = ({ onResponse }: QueryInputProps) => {
         flex: 1,
         flexDirection: 'column',
         flexWrap: 'nowrap',
-        height: '100%'
+        height: 150
       }}
     >
       <Grid item container sx={{ flex: 1 }}>

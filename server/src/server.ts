@@ -3,79 +3,99 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import multer from 'multer';
 import * as dotenv from 'dotenv';
+import { VectorStore } from './services.ts/vector-db';
+import { ChromaClient } from 'chromadb';
 
 dotenv.config();
 
-const app = express();
-const port = process.env.PORT || 4000;
-const upload = multer();
+(async () => {
+  const client = new ChromaClient();
+  await client.reset();
 
-const savedDocuments: Express.Multer.File[] = [];
-app.use(bodyParser.json());
-app.use(cors());
-app.use(cors());
+  const vectorStore = await VectorStore();
 
-app.get('/test', (_req, res) => {
-  res.send('Hello World!');
-});
+  const store = await vectorStore.createCollection('test_document_store');
+  const collections = await vectorStore.listCollections(store);
 
-app.post('/addDocuments', upload.array('documents'), (req, res) => {
-  const documents = req.files as Express.Multer.File[];
+  console.log('store', store);
+  console.log('collections', collections);
 
-  savedDocuments.push(...documents);
+  const app = express();
+  const port = process.env.PORT || 4000;
+  const upload = multer();
 
-  const uploadedDocuments = documentLoader(documents);
+  const savedDocuments: Express.Multer.File[] = [];
+  app.use(bodyParser.json());
+  app.use(cors());
+  app.use(cors());
 
-  res.json(savedDocuments.map((file) => file.originalname));
-});
+  app.get('/test', (_req, res) => {
+    res.send('Hello World!');
+  });
 
-app.post('/askQuestion', (req, res) => {
-  const { question } = req.body;
+  app.post('/addDocuments', upload.array('documents'), (req, res) => {
+    const documents = req.files as Express.Multer.File[];
 
-  const markup = queryDocuments(question);
-  res.json({ response: markup });
-});
+    savedDocuments.push(...documents);
 
-// deleteDocument endpoint
-app.delete('/deleteDocument/:index', (req, res) => {
-  const index = parseInt(req.params.index);
+    const uploadedDocuments = documentLoader(documents);
 
-  const updatedDocuments = deleteDocument(index);
-  res.json(updatedDocuments);
-});
+    res.json(savedDocuments.map((file) => file.originalname));
+  });
 
-app.delete('/clearDocuments', (_req, res) => {
-  const clearedDocuments = clearDocuments();
-  res.json(clearedDocuments);
-});
+  app.post('/askQuestion', async (req, res) => {
+    const { question, systemPrompt } = req.body;
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+    const markup = await queryDocuments(question, systemPrompt);
+    res.json({ response: markup });
+  });
 
-// Dummy functions for demonstration purposes
-// Replace these with your actual implementation
-function documentLoader(files: Express.Multer.File[]): string[] {
-  // Extract file names from the array of files
-  const fileNames = files.map((file) => file.originalname);
+  // deleteDocument endpoint
+  app.delete('/deleteDocument/:index', (req, res) => {
+    const index = parseInt(req.params.index);
 
-  return fileNames;
-}
+    const updatedDocuments = deleteDocument(index);
+    res.json(updatedDocuments);
+  });
 
-function queryDocuments(question: string): string {
-  // Query the documents with the given question
-  // ...
-  return 'Example markup response';
-}
+  app.delete('/clearDocuments', (_req, res) => {
+    const clearedDocuments = clearDocuments();
+    res.json(clearedDocuments);
+  });
 
-function deleteDocument(index: number): any[] {
-  // Delete the document at the given index
-  // ...
-  return [];
-}
+  app.listen(port, () => {
+    console.log(`Server running at http://localhost:${port}`);
+  });
 
-function clearDocuments(): any[] {
-  // Clear all documents
-  // ...
-  return [];
-}
+  // Dummy functions for demonstration purposes
+  // Replace these with your actual implementation
+  function documentLoader(files: Express.Multer.File[]): string[] {
+    files.forEach(async (file: Express.Multer.File) => {
+      await vectorStore.addDocuments(file, store);
+    });
+
+    // Extract file names from the array of files
+    const fileNames = files.map((file) => file.originalname);
+
+    return fileNames;
+  }
+
+  const queryDocuments = async (
+    question: string,
+    systemPrompt: string
+  ): Promise<string> => {
+    return await vectorStore.askQuestion(question, store, systemPrompt);
+  };
+
+  function deleteDocument(index: number): any[] {
+    // Delete the document at the given index
+    // ...
+    return [];
+  }
+
+  function clearDocuments(): any[] {
+    // Clear all documents
+    // ...
+    return [];
+  }
+})();
