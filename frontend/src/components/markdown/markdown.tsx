@@ -1,7 +1,7 @@
 import rehypeMathjax from 'rehype-mathjax';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { Options } from 'react-markdown';
 import { CodeBlock } from '../codeBlock';
 import {
   Table,
@@ -24,6 +24,7 @@ const Markdown = ({ message }: Props) => (
       code({ node, inline, className, children, ...props }) {
         const match = /language-(\w+)/.exec(className || '');
 
+        console.log('match language', match, className);
         return !inline ? (
           <CodeBlock
             key={Math.random()}

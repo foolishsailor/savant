@@ -51,6 +51,14 @@ const DocumentsList = () => {
         height: '100%'
       }}
     >
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        component="label"
+        onClick={() => setOpen(true)}
+      >
+        Add Document
+      </Button>
       <List>
         {documentsUploaded.map((doc, index) => (
           <ListItem key={index}>
@@ -72,14 +80,7 @@ const DocumentsList = () => {
           </ListItem>
         ))}
       </List>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        component="label"
-        onClick={() => setOpen(true)}
-      >
-        Add Document
-      </Button>
+
       <UploadModal
         open={open}
         onClose={handleClose}
