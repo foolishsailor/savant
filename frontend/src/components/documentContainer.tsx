@@ -18,8 +18,7 @@ export const DocumentContainer = ({ children }: DocumentContainerProps) => {
         p: 1,
         flexWrap: 'nowrap',
         minWidth: 200,
-        justifyContent: 'center',
-        backgroundColor: theme.palette.grey[800]
+        justifyContent: 'center'
       }}
     >
       {children}

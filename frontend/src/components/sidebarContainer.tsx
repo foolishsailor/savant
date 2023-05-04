@@ -18,7 +18,7 @@ export const SidebarContainer = ({ children }: SidebarContainerProps) => {
         flexWrap: 'nowrap',
         minWidth: 200,
         justifyContent: 'center',
-        backgroundColor: theme.palette.grey[800]
+        backgroundColor: theme.palette.grey[900]
       }}
     >
       {children}

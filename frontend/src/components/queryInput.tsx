@@ -19,9 +19,29 @@ export interface QueryInputProps {
 
 const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   const [inputText, setInputText] = useState('');
+  const [sliderValue, setSliderValue] = useState(0.5);
+  const [radioValue, setRadioValue] = useState('simple');
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
+  };
+
+  const handleSliderChange = (
+    event: Event,
+    value: number | number[],
+    activeThumb: number
+  ) => {
+    setSliderValue(value as number);
+  };
+
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRadioValue(event.target.value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter') {
+      queryDocuments();
+    }
   };
 
   const queryDocuments = async () => {
@@ -33,7 +53,12 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
       const result = await fetch('http://localhost:4000/askQuestion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: inputText, systemPrompt })
+        body: JSON.stringify({
+          question: inputText,
+          systemPrompt,
+          queryType: radioValue,
+          temperature: sliderValue
+        })
       });
       // Read the response body as a stream
       const reader = result.body?.getReader();
@@ -97,26 +122,17 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
         height: 150
       }}
     >
-      <Grid item container sx={{ flex: 1 }}>
-        <TextField
-          fullWidth
-          label="Query Documents"
-          value={inputText}
-          onChange={handleChange}
-          multiline
-          InputProps={{
-            style: {
-              color: '#EEE',
-              height: '100%',
-              alignItems: 'flex-start'
-            }
-          }}
-          sx={{ label: { color: '#888' } }}
-        />
-      </Grid>
-      <Grid item container spacing={1} alignItems="center">
-        <Grid item xs={6}>
+      <Grid
+        item
+        container
+        gap={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid item sx={{ width: 500, pl: 4, pr: 4 }}>
           <Slider
+            value={sliderValue}
+            onChange={handleSliderChange}
             defaultValue={0.5}
             min={0}
             step={0.1}
@@ -127,28 +143,41 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
               { value: 0.5, label: 'neutral' },
               { value: 1, label: 'creative' }
             ]}
-            sx={{ width: '100%' }}
           />
         </Grid>
-        <Grid item xs={4}>
-          <RadioGroup row defaultValue="simple">
+        <Grid item>
+          <RadioGroup row defaultValue="simple" onChange={handleRadioChange}>
             <FormControlLabel
               value="simple"
               control={<Radio />}
               label="Simple"
             />
             <FormControlLabel
-              value="revision"
+              value="refine"
               control={<Radio />}
-              label="Revision"
+              label="Refine"
             />
           </RadioGroup>
         </Grid>
-        <Grid item xs={2} container justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={queryDocuments}>
-            Send
-          </Button>
-        </Grid>
+      </Grid>
+      <Grid sx={{ flex: 1 }}>
+        <TextField
+          fullWidth
+          label="Query Documents"
+          value={inputText}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          multiline
+          rows={3}
+          InputProps={{
+            style: {
+              color: '#EEE',
+              height: '100%',
+              alignItems: 'flex-start'
+            }
+          }}
+          sx={{ label: { color: '#888' } }}
+        />
       </Grid>
     </Grid>
   );

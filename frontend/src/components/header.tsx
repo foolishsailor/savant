@@ -10,28 +10,13 @@ export interface HeaderProps {
 const Header = ({ onUpdateSystemPrompt }: HeaderProps) => {
   return (
     <Grid sx={{ display: 'flex', alignItems: 'center', p: 1, gap: 2 }}>
-      <Grid>
-        <img
-          src={logo}
-          alt="Savant"
-          style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '20%'
-          }}
-        />
-      </Grid>
-      <Grid>
-        <Typography variant="h3">Savant </Typography>
-        <Typography variant="h6">The ultimate document whisperer!</Typography>
-      </Grid>
       <Grid sx={{ flex: 1 }}>
         <TextField
           label="System Prompt (optional)"
           variant="outlined"
           onChange={(event) => onUpdateSystemPrompt(event.target.value)}
           multiline
-          rows={4}
+          rows={2}
           fullWidth
           InputProps={{
             style: {

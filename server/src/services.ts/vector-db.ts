@@ -48,6 +48,8 @@ export const VectorStore = async () => {
       question: string,
       store: Chroma,
       systemPrompt: string,
+      queryType: 'simple' | 'refine',
+      temperature: number,
       callback: (token: string) => void
     ) => {
       StreamingCallbackHandler.setStreamCallback(callback);
@@ -75,25 +77,38 @@ export const VectorStore = async () => {
         chat_history: [chatHistory]
       });
 
-      //Produces multiple answers - need a trigger to replace text as its refining....
-      const chain = new RetrievalQAChain({
-        combineDocumentsChain: loadQARefineChain(model),
-        retriever: store.asRetriever()
-      });
+      if (queryType === 'refine') {
+        //Produces multiple answers - need a trigger to replace text as its refining....
+        const chain = new RetrievalQAChain({
+          combineDocumentsChain: loadQARefineChain(model),
+          retriever: store.asRetriever()
+        });
 
-      //Produices simple answer
-      //const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
+        const res = await chain.call(
+          {
+            chainType: 'stuff',
+            query: prompt,
+            temperature
+          },
+          [new StreamingCallbackHandler()]
+        );
 
-      const res = await chain.call(
-        {
-          chainType: 'stuff',
-          query: prompt
-        },
-        [new StreamingCallbackHandler()]
-      );
+        console.log('total output=======', res);
+        chatHistory.push(res.output_text);
+      } else {
+        const chain = RetrievalQAChain.fromLLM(model, store.asRetriever());
 
-      console.log('total output=======', res);
-      chatHistory.push(res.output_text);
+        const res = await chain.call(
+          {
+            chainType: 'stuff',
+            query: prompt,
+            temperature
+          },
+          [new StreamingCallbackHandler()]
+        );
+
+        chatHistory.push(res.text);
+      }
     }
   };
 };
