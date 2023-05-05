@@ -45,8 +45,8 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   };
 
   const queryDocuments = async () => {
-    addResponse((prev) => [...prev, { source: 'user', content: inputText }]);
-    addResponse((prev) => [...prev, { source: 'assistant', content: '' }]);
+    addResponse((prev) => [...prev, { source: 'user', content: [inputText] }]);
+    addResponse((prev) => [...prev, { source: 'assistant', content: [''] }]);
     setInputText('');
 
     try {
@@ -81,14 +81,24 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
               const commandFilteredOut = decodedChunk
                 .split('c0fb7f7030574dd7801ae6f2d53dfd51')
                 .join('');
+
               const lastElementIndex = prev.length - 1;
-              const updatedAssistantMessage: Message = {
+
+              let updatedAssistantMessage: Message = {
                 source: 'assistant',
-                content:
-                  decodedChunk === 'c0fb7f7030574dd7801ae6f2d53dfd51'
-                    ? (prev[lastElementIndex].content = '')
-                    : prev[lastElementIndex].content + commandFilteredOut
+                content: [...prev[lastElementIndex].content]
               };
+
+              if (decodedChunk === 'c0fb7f7030574dd7801ae6f2d53dfd51') {
+                updatedAssistantMessage.content.push(' ');
+              } else {
+                const lastIndexInContentArray =
+                  updatedAssistantMessage.content.length - 1;
+                updatedAssistantMessage.content[lastIndexInContentArray] =
+                  updatedAssistantMessage.content[lastIndexInContentArray] +
+                  commandFilteredOut;
+              }
+
               const newConversation = [...prev];
               newConversation[lastElementIndex] = updatedAssistantMessage;
               return newConversation;

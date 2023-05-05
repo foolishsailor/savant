@@ -18,6 +18,13 @@ class StreamingCallbackHandler extends BaseCallbackHandler {
     console.log(
       `====================================== Entering new ${chain.name} chain...`
     );
+  }
+
+  async handleChainEnd(_output: ChainValues) {
+    console.log(
+      '====================================== Finished chain.',
+      _output
+    );
 
     if (
       StreamingCallbackHandler.streamCallback &&
@@ -27,13 +34,6 @@ class StreamingCallbackHandler extends BaseCallbackHandler {
         process.env.CHAIN_END_TRIGGER_MESSAGE
       );
     }
-  }
-
-  async handleChainEnd(_output: ChainValues) {
-    console.log(
-      '====================================== Finished chain.',
-      _output
-    );
   }
 
   async handleAgentAction(action: AgentAction) {
