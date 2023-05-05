@@ -21,6 +21,7 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   const [inputText, setInputText] = useState('');
   const [sliderValue, setSliderValue] = useState(0.5);
   const [radioValue, setRadioValue] = useState('simple');
+  const { REACT_APP_CHAIN_END_TRIGGER_MESSAGE } = process.env;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
@@ -77,32 +78,33 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             // Decode the received chunk and add it to the receivedData string
             const decodedChunk = new TextDecoder().decode(value);
 
-            addResponse((prev) => {
-              const commandFilteredOut = decodedChunk
-                .split('c0fb7f7030574dd7801ae6f2d53dfd51')
-                .join('');
+            if (REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+              addResponse((prev) => {
+                const commandFilteredOut = decodedChunk
+                  .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+                  .join('');
 
-              const lastElementIndex = prev.length - 1;
+                const lastElementIndex = prev.length - 1;
 
-              let updatedAssistantMessage: Message = {
-                source: 'assistant',
-                content: [...prev[lastElementIndex].content]
-              };
+                let updatedAssistantMessage: Message = {
+                  source: 'assistant',
+                  content: [...prev[lastElementIndex].content]
+                };
 
-              if (decodedChunk === 'c0fb7f7030574dd7801ae6f2d53dfd51') {
-                updatedAssistantMessage.content.push(' ');
-              } else {
-                const lastIndexInContentArray =
-                  updatedAssistantMessage.content.length - 1;
-                updatedAssistantMessage.content[lastIndexInContentArray] =
-                  updatedAssistantMessage.content[lastIndexInContentArray] +
-                  commandFilteredOut;
-              }
+                if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
+                  updatedAssistantMessage.content.push(' ');
+                } else {
+                  const lastIndexInContentArray =
+                    updatedAssistantMessage.content.length - 1;
+                  updatedAssistantMessage.content[lastIndexInContentArray] =
+                    updatedAssistantMessage.content[lastIndexInContentArray] +
+                    commandFilteredOut;
+                }
 
-              const newConversation = [...prev];
-              newConversation[lastElementIndex] = updatedAssistantMessage;
-              return newConversation;
-            });
+                const newConversation = [...prev];
+                newConversation[lastElementIndex] = updatedAssistantMessage;
+                return newConversation;
+              });
 
             // Continue reading the stream
             readStream();
