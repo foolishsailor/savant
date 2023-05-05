@@ -39,7 +39,7 @@ const UploadModal = ({ open, onClose, onUploadDocuments }: Props) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/addDocuments', {
+      const response = await fetch('http://localhost:4000/documents', {
         method: 'POST',
         body: formData
       });
