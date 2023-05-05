@@ -19,21 +19,47 @@ export interface QueryInputProps {
 
 const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   const [inputText, setInputText] = useState('');
+  const [sliderValue, setSliderValue] = useState(0.5);
+  const [radioValue, setRadioValue] = useState('simple');
+  const { REACT_APP_CHAIN_END_TRIGGER_MESSAGE } = process.env;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
   };
 
+  const handleSliderChange = (
+    event: Event,
+    value: number | number[],
+    activeThumb: number
+  ) => {
+    setSliderValue(value as number);
+  };
+
+  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRadioValue(event.target.value);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter') {
+      queryDocuments();
+    }
+  };
+
   const queryDocuments = async () => {
-    addResponse((prev) => [...prev, { source: 'user', content: inputText }]);
-    addResponse((prev) => [...prev, { source: 'assistant', content: '' }]);
+    addResponse((prev) => [...prev, { source: 'user', content: [inputText] }]);
+    addResponse((prev) => [...prev, { source: 'assistant', content: [''] }]);
     setInputText('');
 
     try {
       const result = await fetch('http://localhost:4000/askQuestion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: inputText, systemPrompt })
+        body: JSON.stringify({
+          question: inputText,
+          systemPrompt,
+          queryType: radioValue,
+          temperature: sliderValue
+        })
       });
       // Read the response body as a stream
       const reader = result.body?.getReader();
@@ -52,22 +78,33 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             // Decode the received chunk and add it to the receivedData string
             const decodedChunk = new TextDecoder().decode(value);
 
-            addResponse((prev) => {
-              const commandFilteredOut = decodedChunk
-                .split('c0fb7f7030574dd7801ae6f2d53dfd51')
-                .join('');
-              const lastElementIndex = prev.length - 1;
-              const updatedAssistantMessage: Message = {
-                source: 'assistant',
-                content:
-                  decodedChunk === 'c0fb7f7030574dd7801ae6f2d53dfd51'
-                    ? (prev[lastElementIndex].content = '')
-                    : prev[lastElementIndex].content + commandFilteredOut
-              };
-              const newConversation = [...prev];
-              newConversation[lastElementIndex] = updatedAssistantMessage;
-              return newConversation;
-            });
+            if (REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+              addResponse((prev) => {
+                const commandFilteredOut = decodedChunk
+                  .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+                  .join('');
+
+                const lastElementIndex = prev.length - 1;
+
+                let updatedAssistantMessage: Message = {
+                  source: 'assistant',
+                  content: [...prev[lastElementIndex].content]
+                };
+
+                if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
+                  updatedAssistantMessage.content.push(' ');
+                } else {
+                  const lastIndexInContentArray =
+                    updatedAssistantMessage.content.length - 1;
+                  updatedAssistantMessage.content[lastIndexInContentArray] =
+                    updatedAssistantMessage.content[lastIndexInContentArray] +
+                    commandFilteredOut;
+                }
+
+                const newConversation = [...prev];
+                newConversation[lastElementIndex] = updatedAssistantMessage;
+                return newConversation;
+              });
 
             // Continue reading the stream
             readStream();
@@ -97,26 +134,17 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
         height: 150
       }}
     >
-      <Grid item container sx={{ flex: 1 }}>
-        <TextField
-          fullWidth
-          label="Query Documents"
-          value={inputText}
-          onChange={handleChange}
-          multiline
-          InputProps={{
-            style: {
-              color: '#EEE',
-              height: '100%',
-              alignItems: 'flex-start'
-            }
-          }}
-          sx={{ label: { color: '#888' } }}
-        />
-      </Grid>
-      <Grid item container spacing={1} alignItems="center">
-        <Grid item xs={6}>
+      <Grid
+        item
+        container
+        gap={2}
+        alignItems="center"
+        justifyContent="space-between"
+      >
+        <Grid item sx={{ width: 500, pl: 4, pr: 4 }}>
           <Slider
+            value={sliderValue}
+            onChange={handleSliderChange}
             defaultValue={0.5}
             min={0}
             step={0.1}
@@ -127,28 +155,41 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
               { value: 0.5, label: 'neutral' },
               { value: 1, label: 'creative' }
             ]}
-            sx={{ width: '100%' }}
           />
         </Grid>
-        <Grid item xs={4}>
-          <RadioGroup row defaultValue="simple">
+        <Grid item>
+          <RadioGroup row defaultValue="simple" onChange={handleRadioChange}>
             <FormControlLabel
               value="simple"
               control={<Radio />}
               label="Simple"
             />
             <FormControlLabel
-              value="revision"
+              value="refine"
               control={<Radio />}
-              label="Revision"
+              label="Refine"
             />
           </RadioGroup>
         </Grid>
-        <Grid item xs={2} container justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={queryDocuments}>
-            Send
-          </Button>
-        </Grid>
+      </Grid>
+      <Grid sx={{ flex: 1 }}>
+        <TextField
+          fullWidth
+          label="Query Documents"
+          value={inputText}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          multiline
+          rows={3}
+          InputProps={{
+            style: {
+              color: '#EEE',
+              height: '100%',
+              alignItems: 'flex-start'
+            }
+          }}
+          sx={{ label: { color: '#888' } }}
+        />
       </Grid>
     </Grid>
   );

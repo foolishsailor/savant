@@ -14,6 +14,8 @@ import ConversationList from './components/conversationList';
 import { Message } from './types/message';
 import { SettingContainer } from './components/settingContainer';
 import { SidebarContainer } from './components/sidebarContainer';
+import AppBarComponent from './components/appBar';
+import { ContentContainer } from './components/contentContainer';
 
 const darkTheme = createTheme({
   palette: {
@@ -50,22 +52,25 @@ const App: React.FC = () => {
       <CssBaseline />
       <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
         <PageContainer>
-          <QueryContainer>
-            <Header onUpdateSystemPrompt={systemPromptHandler} />
-            <ConversationContainer>
-              <ConversationList messages={conversation} />
-            </ConversationContainer>
-            <QueryInput
-              addResponse={setConversation}
-              systemPrompt={systemPrompt}
-            />
-          </QueryContainer>
-          <SidebarContainer>
-            <DocumentContainer>
-              <DocumentsList />
-            </DocumentContainer>
-            <SettingContainer />
-          </SidebarContainer>
+          <AppBarComponent />
+          <ContentContainer>
+            <QueryContainer>
+              <Header onUpdateSystemPrompt={systemPromptHandler} />
+              <ConversationContainer>
+                <ConversationList messages={conversation} />
+              </ConversationContainer>
+              <QueryInput
+                addResponse={setConversation}
+                systemPrompt={systemPrompt}
+              />
+            </QueryContainer>
+            <SidebarContainer>
+              <DocumentContainer>
+                <DocumentsList />
+              </DocumentContainer>
+              <SettingContainer />
+            </SidebarContainer>
+          </ContentContainer>
         </PageContainer>
       </Container>
     </ThemeProvider>

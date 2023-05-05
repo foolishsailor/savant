@@ -1,7 +1,13 @@
-import { IconCheck, IconClipboard, IconDownload } from '@tabler/icons-react';
+import { Button, Grid } from '@mui/material';
+
+import DownloadIcon from '@mui/icons-material/Download';
+import ContentPasteIcon from '@mui/icons-material/ContentPaste';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+
 import { FC, memo, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { useTheme } from '@mui/system';
 
 import { generateRandomString, programmingLanguages } from '../utils/codeblock';
 
@@ -11,7 +17,8 @@ interface Props {
 }
 
 export const CodeBlock: FC<Props> = memo(({ language, value }) => {
-  const [isCopied, setIsCopied] = useState<Boolean>(false);
+  const theme = useTheme();
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const copyToClipboard = () => {
     if (!navigator.clipboard || !navigator.clipboard.writeText) {
@@ -51,26 +58,28 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
     URL.revokeObjectURL(url);
   };
   return (
-    <div className="codeblock relative font-sans text-[16px]">
-      <div className="flex items-center justify-between py-1.5 px-4">
+    <Grid
+      sx={{ backgroundColor: theme.palette.grey[900], p: 1, borderRadius: 2 }}
+    >
+      <Grid>
         <span className="text-xs lowercase text-white">{language}</span>
 
-        <div className="flex items-center">
-          <button
-            className="flex gap-1.5 items-center rounded bg-none p-1 text-xs text-white"
+        <Grid>
+          <Button
             onClick={copyToClipboard}
+            sx={{ color: theme.palette.text.icon }}
           >
-            {isCopied ? <IconCheck size={18} /> : <IconClipboard size={18} />}
-            {isCopied ? 'Copied!' : 'Copy code'}
-          </button>
-          <button
-            className="flex items-center rounded bg-none p-1 text-xs text-white"
+            {isCopied ? <CheckBoxIcon /> : <ContentPasteIcon />}
+            {isCopied ? 'Copied!' : 'Copy'}
+          </Button>
+          <Button
             onClick={downloadAsFile}
+            sx={{ color: theme.palette.text.icon }}
           >
-            <IconDownload size={18} />
-          </button>
-        </div>
-      </div>
+            <DownloadIcon />
+          </Button>
+        </Grid>
+      </Grid>
 
       <SyntaxHighlighter
         language={language}
@@ -79,7 +88,7 @@ export const CodeBlock: FC<Props> = memo(({ language, value }) => {
       >
         {value}
       </SyntaxHighlighter>
-    </div>
+    </Grid>
   );
 });
 CodeBlock.displayName = 'CodeBlock';

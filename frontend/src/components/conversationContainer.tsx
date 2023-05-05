@@ -15,11 +15,10 @@ export const ConversationContainer = ({
       container
       sx={{
         backgroundColor: theme.palette.grey[900],
-        borderRadius: 2,
-        p: 3,
+
         flex: 5,
         overFlow: 'auto',
-        maxHeight: '75vh',
+        maxHeight: 'calc(100vh - 360px)',
         display: 'flex'
       }}
     >

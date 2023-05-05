@@ -1,21 +1,20 @@
 import { ReactNode } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 
 export interface PageContainerProps {
   children?: ReactNode;
 }
 
-export const PageContainer = ({ children }: PageContainerProps) => {
+export const ContentContainer = ({ children }: PageContainerProps) => {
   return (
     <Grid
       container
       columnGap={1}
       sx={{
-        minHeight: '100vh',
-        maxHeight: '100vh',
+        flex: 1,
         display: 'flex',
         justifyContent: 'center',
-        flexDirection: 'column',
+        flexDirection: 'row',
         flexWrap: 'nowrap'
       }}
     >

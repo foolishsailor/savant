@@ -32,7 +32,7 @@ dotenv.config();
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     res.setHeader('Transfer-Encoding', 'chunked');
 
-    const { question, systemPrompt } = req.body;
+    const { question, systemPrompt, queryType, temperature } = req.body;
     const stream = new Readable({
       read() {}
     });
@@ -47,6 +47,8 @@ dotenv.config();
       question,
       store,
       systemPrompt,
+      queryType,
+      temperature,
       streamCallback
     );
     res.end();
