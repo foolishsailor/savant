@@ -8,11 +8,11 @@ import {
   Tab,
   Box
 } from '@mui/material';
-import { Message } from '../types/message';
-import Markdown from './markdown';
+import { Message } from '../../types/message';
+import Markdown from '../markdown';
 import { AiOutlineRobot } from 'react-icons/ai';
 import { BsPerson } from 'react-icons/bs';
-import RevisionTabs from './revisionTabs';
+import RevisionTabs from '../revisionTabs';
 
 interface Props {
   messages: Message[];

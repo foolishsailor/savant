@@ -10,28 +10,17 @@ import { useTheme } from '@mui/system';
 import SettingsIcon from '@mui/icons-material/Settings';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import { SidebarItem } from '../containers/container.elements';
 
 export interface SettingContainerProps {}
 
-export const SettingContainer = () => {
-  const theme = useTheme();
+export const SidebarSettingsList = () => {
   const onSettingsClick = () => {};
   const onClearDocumentsClick = () => {};
   const onClearConversationClick = () => {};
 
   return (
-    <Grid
-      container
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-
-        flexWrap: 'nowrap',
-        minWidth: 200,
-        justifyContent: 'center',
-        borderTop: `solid 1px ${theme.palette.grey[600]}`
-      }}
-    >
+    <SidebarItem sx={{ flex: 'unset' }}>
       <List>
         <ListItem onClick={onClearConversationClick}>
           <ListItemIcon>
@@ -52,6 +41,6 @@ export const SettingContainer = () => {
           <ListItemText primary="Settings" />
         </ListItem>
       </List>
-    </Grid>
+    </SidebarItem>
   );
 };

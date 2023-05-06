@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 
 import { Message } from '../types/message';
+import { toast } from 'react-toastify';
 
 export interface QueryInputProps {
   addResponse: React.Dispatch<React.SetStateAction<Message[]>>;
@@ -51,16 +52,19 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
     setInputText('');
 
     try {
-      const result = await fetch('http://localhost:4000/askQuestion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: inputText,
-          systemPrompt,
-          queryType: radioValue,
-          temperature: sliderValue
-        })
-      });
+      const result = await fetch(
+        'http://localhost:4000/vectorstore/askQuestion',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: inputText,
+            systemPrompt,
+            queryType: radioValue,
+            temperature: sliderValue
+          })
+        }
+      );
       // Read the response body as a stream
       const reader = result.body?.getReader();
 
@@ -109,7 +113,8 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             // Continue reading the stream
             readStream();
           } catch (error) {
-            console.error('Error while reading the stream: ', error);
+            toast.error('Failed to upload files----------');
+            return;
           }
         }
       };
@@ -117,7 +122,8 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
       // Start reading the stream
       readStream();
     } catch (error) {
-      console.error(error);
+      toast.error('Failed to upload files');
+      return;
     }
   };
 

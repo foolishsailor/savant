@@ -10,8 +10,9 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import UploadModal from './uploadModal';
-import FileIcon from './fileIcon';
+import UploadModal from '../modals/uploadModal';
+import FileIcon from '../fileIcon';
+import { SidebarItem } from '../containers/container.elements';
 
 const DocumentsList = () => {
   const [documentsUploaded, setDocumentsUploaded] = useState<string[]>([]);
@@ -39,26 +40,7 @@ const DocumentsList = () => {
   };
 
   return (
-    <Grid
-      item
-      container
-      rowGap={1}
-      sx={{
-        pt: 2,
-        flex: 1,
-        flexDirection: 'column',
-        flexWrap: 'nowrap',
-        height: '100%'
-      }}
-    >
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        component="label"
-        onClick={() => setOpen(true)}
-      >
-        Add Document
-      </Button>
+    <SidebarItem>
       <List>
         {documentsUploaded.map((doc, index) => (
           <ListItem key={index}>
@@ -80,13 +62,22 @@ const DocumentsList = () => {
           </ListItem>
         ))}
       </List>
-
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        component="label"
+        onClick={() => setOpen(true)}
+        sx={{ alignSelf: 'flex-end' }}
+        fullWidth
+      >
+        Add Document
+      </Button>
       <UploadModal
         open={open}
         onClose={handleClose}
         onUploadDocuments={documentsUploadHandler}
       />
-    </Grid>
+    </SidebarItem>
   );
 };
 

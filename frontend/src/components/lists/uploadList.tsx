@@ -1,6 +1,6 @@
 import { Grid, Typography } from '@mui/material';
 
-import FileIcon from './fileIcon';
+import FileIcon from '../fileIcon';
 
 interface UploadListProps {
   files: File[];

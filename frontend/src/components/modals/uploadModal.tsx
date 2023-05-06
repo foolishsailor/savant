@@ -9,7 +9,7 @@ import {
 import { DropzoneOptions, useDropzone } from 'react-dropzone';
 import { useState } from 'react';
 import { useTheme } from '@mui/system';
-import UploadList from './uploadList';
+import UploadList from '../lists/uploadList';
 import { toast } from 'react-toastify';
 
 interface Props {
