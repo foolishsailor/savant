@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Message } from '../types/message';
 import { ConversationContainer } from './containers/container.elements';
-import { QueryContainer } from './containers/queryContainer';
+import { QueryContainer } from './containers/container.elements';
 import Header from './header';
 import ConversationList from './lists/conversationList';
 import QueryInput from './queryInput';

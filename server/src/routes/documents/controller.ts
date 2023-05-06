@@ -1,4 +1,3 @@
-import { VectorStore } from '../../services.ts/vector-db';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { Request, Response } from 'express';
 

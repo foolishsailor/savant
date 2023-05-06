@@ -1,21 +1,14 @@
 import React, { useState } from 'react';
 import { Container } from '@mui/material';
-import { QueryContainer } from './components/queryContainer';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { PageContainer } from './components/pageContainer';
-import { DocumentContainer } from './components/documentContainer';
-import { ConversationContainer } from './components/conversationContainer';
-import QueryInput from './components/queryInput';
-import DocumentsList from './components/documentList';
-import Header from './components/header';
+import { PageContainer } from './components/containers/pageContainer';
+
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ConversationList from './components/conversationList';
-import { Message } from './types/message';
-import { SettingContainer } from './components/settingContainer';
-import { SidebarContainer } from './components/sidebarContainer';
 import AppBarComponent from './components/appBar';
-import { ContentContainer } from './components/contentContainer';
+import { ContentContainer } from './components/containers/container.elements';
+import DocumentSideBar from './components/documentSideBar';
+import Conversation from './components/conversation';
 
 const darkTheme = createTheme({
   palette: {
@@ -24,17 +17,6 @@ const darkTheme = createTheme({
 });
 
 const App: React.FC = () => {
-  const [conversation, setConversation] = useState<Message[]>([]);
-  const [systemPrompt, setSystemPrompt] = useState<string>('');
-
-  const responseHandler = (response: Message) => {
-    setConversation((prev) => [...prev, response]);
-  };
-
-  const systemPromptHandler = (prompt: string) => {
-    setSystemPrompt(prompt);
-  };
-
   return (
     <ThemeProvider theme={darkTheme}>
       <ToastContainer
@@ -54,22 +36,8 @@ const App: React.FC = () => {
         <PageContainer>
           <AppBarComponent />
           <ContentContainer>
-            <QueryContainer>
-              <Header onUpdateSystemPrompt={systemPromptHandler} />
-              <ConversationContainer>
-                <ConversationList messages={conversation} />
-              </ConversationContainer>
-              <QueryInput
-                addResponse={setConversation}
-                systemPrompt={systemPrompt}
-              />
-            </QueryContainer>
-            <SidebarContainer>
-              <DocumentContainer>
-                <DocumentsList />
-              </DocumentContainer>
-              <SettingContainer />
-            </SidebarContainer>
+            <Conversation />
+            <DocumentSideBar />
           </ContentContainer>
         </PageContainer>
       </Container>

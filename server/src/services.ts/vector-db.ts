@@ -5,8 +5,10 @@ import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { StreamingCallbackHandler } from '@/langchain/callbacks/streaming-callback-handler';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
+import { ChromaClient, Collection } from 'chromadb';
 
 export const VectorStore = async () => {
+  const client = new ChromaClient();
   const model = new OpenAI({
     openAIApiKey: process.env.OPENAI_API_KEY,
     modelName: process.env.DEFAULT_OPENAI_MODEL,
@@ -17,9 +19,14 @@ export const VectorStore = async () => {
   const chatHistory: string[] = [];
 
   return {
-    listCollections: async (store: Chroma) => {
-      const collections = await store.index?.listCollections();
+    listCollections: async () => {
+      const collections = await client.listCollections();
       return collections;
+    },
+    getCollection: async (name: string) => {
+      return await client.getCollection(name);
+      //return await collection.get();
+      //return await collection.delete(undefined, { source: 'blob' });
     },
     createCollection: async (name: string) => {
       const vectorStore = new Chroma(
@@ -40,6 +47,9 @@ export const VectorStore = async () => {
       await store.addDocuments(docs);
 
       console.log('await docs added');
+    },
+    getDocuments: async (collection: Collection) => {
+      return await collection.get();
     },
     clearChatHistory: () => {
       chatHistory.length = 0;

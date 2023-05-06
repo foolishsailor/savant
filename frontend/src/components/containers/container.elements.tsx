@@ -1,5 +1,15 @@
-import { Button, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
+
+export const PageContainer = styled(Grid)(({ theme }) => ({
+  minHeight: '100vh',
+  maxHeight: '100vh',
+  display: 'flex',
+  justifyContent: 'center',
+  flexDirection: 'column',
+  flexWrap: 'nowrap',
+  columnGap: theme.spacing(1)
+}));
 
 export const SidebarContainer = styled(Grid)(({ theme }) => ({
   display: 'flex',
@@ -29,7 +39,7 @@ export const ContentContainer = styled(Grid)(({ theme }) => ({
   justifyContent: 'center',
   flexDirection: 'row',
   flexWrap: 'nowrap',
-  gap: theme.spacing(1)
+  columnGap: theme.spacing(1)
 }));
 
 export const ConversationContainer = styled(Grid)(({ theme }) => ({
@@ -38,4 +48,15 @@ export const ConversationContainer = styled(Grid)(({ theme }) => ({
   overFlow: 'auto',
   maxHeight: 'calc(100vh - 360px)',
   display: 'flex'
+}));
+
+export const QueryContainer = styled(Grid)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 4,
+  p: 1,
+  flexWrap: 'nowrap',
+  minWidth: 200,
+  justifyContent: 'center',
+  backgroundColor: theme.palette.grey[900]
 }));
