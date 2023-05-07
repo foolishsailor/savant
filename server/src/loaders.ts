@@ -2,11 +2,13 @@ import {
   JSONLoader,
   JSONLinesLoader
 } from 'langchain/document_loaders/fs/json';
+
 import { TextLoader } from 'langchain/document_loaders/fs/text';
 import { CSVLoader } from 'langchain/document_loaders/fs/csv';
 import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
 import { DocxLoader } from 'langchain/document_loaders/fs/docx';
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
+import { Document } from 'langchain/dist/document';
 
 interface DocumentLoaders {
   [key: string]: (file: Blob) => Promise<any>;
@@ -39,10 +41,15 @@ const loaders: DocumentLoaders = {
   css: async (file: Blob) => new TextLoader(file),
   csv: async (file: Blob) => new CSVLoader(file),
   docx: async (file: Blob) => new DocxLoader(file),
-  pdf: async (file: Blob) => new PDFLoader(file)
+  pdf: async (file: Blob) =>
+    new PDFLoader(file, {
+      splitPages: false
+    })
 };
 
-export const loader = async (file: Express.Multer.File) => {
+export const loader = async (
+  file: Express.Multer.File
+): Promise<Document[]> => {
   const blob = getBlobFromFile(file);
 
   const extension = getFileExtension(file.originalname);
@@ -53,5 +60,17 @@ export const loader = async (file: Express.Multer.File) => {
   }
 
   const fileLoader = await loadFn(blob);
-  return fileLoader.loadAndSplit(textSplitter);
+  const docs: Document[] = await fileLoader.loadAndSplit(textSplitter);
+
+  const customMetadata = { filename: file.originalname };
+
+  return docs.map((doc: Document) => {
+    return {
+      ...doc,
+      metadata: {
+        ...doc.metadata,
+        ...customMetadata
+      }
+    };
+  });
 };

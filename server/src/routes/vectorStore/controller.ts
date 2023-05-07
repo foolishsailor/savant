@@ -1,4 +1,4 @@
-import { Chroma } from 'langchain/vectorstores/chroma';
+import { VectorStore } from '@/services/vector-store';
 import { Request, Response } from 'express';
 import { Readable } from 'stream';
 
@@ -6,7 +6,8 @@ export interface Controller {
   askQuestion(req: Request, res: Response): Promise<void>;
 }
 
-export default (vectorStore: any, store: Chroma) => {
+export default () => {
+  const vectorStore = new VectorStore();
   return {
     askQuestion: async (req: Request, res: Response) => {
       res.setHeader('Content-Type', 'application/json; charset=utf-8');
@@ -25,7 +26,6 @@ export default (vectorStore: any, store: Chroma) => {
 
       await vectorStore.askQuestion(
         question,
-        store,
         systemPrompt,
         queryType,
         temperature,

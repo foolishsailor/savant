@@ -63,7 +63,6 @@ class StreamingCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleLLMNewToken(token: string) {
-    //console.log('token', token);
     StreamingCallbackHandler.streamCallback &&
       StreamingCallbackHandler.streamCallback(token);
   }

@@ -5,5 +5,5 @@ export default (router: Router, controller: Controller) => {
   return router
     .get('/collections', controller.getCollection)
     .post('/collections', controller.createCollection)
-    .delete('/collections/:index', controller.deleteCollection);
+    .delete('/collections/:name', controller.deleteCollection);
 };
