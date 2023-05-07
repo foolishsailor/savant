@@ -1,4 +1,4 @@
-import { Chroma } from 'langchain/vectorstores/chroma';
+import { VectorStore } from '@/services/vector-store';
 import { Request, Response } from 'express';
 
 export interface Controller {
@@ -7,20 +7,21 @@ export interface Controller {
   deleteCollection(req: Request, res: Response): Promise<void>;
 }
 
-export default (vectorStore: any, store: Chroma) => {
+export default () => {
+  const vectorStore = new VectorStore();
   return {
     getCollection: async (req: Request, res: Response) => {
-      const collectionName = req.query.name;
+      const { collectionName } = req.query;
       let collections;
 
       if (collectionName) {
+        await vectorStore.setCreateChromaStore(collectionName as string);
         const collection = await vectorStore.getCollection(
-          store,
-          collectionName
+          collectionName as string
         );
         collections = collection ? [collection] : [];
       } else {
-        collections = await vectorStore.listCollections(store);
+        collections = await vectorStore.listCollections();
       }
 
       res.json(collections);
@@ -28,6 +29,16 @@ export default (vectorStore: any, store: Chroma) => {
 
     createCollection: async (req: Request, res: Response) => {},
 
-    deleteCollection: async (req: Request, res: Response) => {}
+    deleteCollection: async (req: Request, res: Response) => {
+      const { name } = req.params;
+
+      const collection = await vectorStore.getCollection(name);
+      if (collection) {
+        await vectorStore.deleteCollection(name);
+      }
+
+      const collections = await vectorStore.listCollections();
+      res.json(collections);
+    }
   };
 };

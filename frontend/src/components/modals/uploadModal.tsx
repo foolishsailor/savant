@@ -11,14 +11,22 @@ import { useState } from 'react';
 import { useTheme } from '@mui/system';
 import UploadList from '../lists/uploadList';
 import { toast } from 'react-toastify';
+import { DocumentsObjectInterface } from '../../types/documents';
+import { CollectionList } from '../../types/collection';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onUploadDocuments: (document: string[]) => void;
+  onUploadDocuments: (document: DocumentsObjectInterface[]) => void;
+  selectedCollection?: CollectionList;
 }
 
-const UploadModal = ({ open, onClose, onUploadDocuments }: Props) => {
+const UploadModal = ({
+  open,
+  onClose,
+  onUploadDocuments,
+  selectedCollection
+}: Props) => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
@@ -32,11 +40,15 @@ const UploadModal = ({ open, onClose, onUploadDocuments }: Props) => {
   } as DropzoneOptions);
 
   const handleUpload = async () => {
+    setIsLoading(true);
+
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('documents', file);
     });
-    setIsLoading(true);
+
+    if (selectedCollection?.name)
+      formData.append('collectionName', selectedCollection.name);
 
     try {
       const response = await fetch('http://localhost:4000/documents', {
@@ -47,18 +59,16 @@ const UploadModal = ({ open, onClose, onUploadDocuments }: Props) => {
       setIsLoading(false);
 
       if (response.ok) {
-        console.log('Files uploaded successfully');
         const documents = await response.json();
+
         onUploadDocuments(documents);
         setFiles([]);
         toast.success('Files uploaded successfully');
         onClose();
       } else {
-        console.error('Error uploading files');
         toast.error('Failed to upload files');
       }
     } catch (error) {
-      console.error('Error uploading files', error);
       toast.error(`Failed to upload files:${error}`);
       setIsLoading(false);
     }

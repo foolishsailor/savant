@@ -25,11 +25,11 @@ export const SidebarContainer = styled(Grid)(({ theme }) => ({
 }));
 
 export const SidebarItem = styled(Grid)(({ theme }) => ({
+  display: 'flex',
   p: 1,
   flex: 1,
   flexDirection: 'column',
   flexWrap: 'nowrap',
-  justifyContent: 'center',
   padding: theme.spacing(1)
 }));
 

@@ -1,58 +1,60 @@
-import { Chroma } from 'langchain/vectorstores/chroma';
+import { VectorStore } from '@/services/vector-store';
 import { Request, Response } from 'express';
 
 export interface Controller {
+  getDocuments(req: Request, res: Response): Promise<void>;
   addDocuments(req: Request, res: Response): Promise<void>;
   deleteDocuments(req: Request, res: Response): Promise<void>;
   clearDocuments(req: Request, res: Response): Promise<void>;
 }
 
-export default (vectorStore: any, store: Chroma) => {
-  const savedDocuments: Express.Multer.File[] = [];
-
-  function documentLoader(files: Express.Multer.File[]): string[] {
-    files.forEach(async (file: Express.Multer.File) => {
-      await vectorStore.addDocuments(file, store);
-    });
-
-    const fileNames = files.map((file) => file.originalname);
-
-    return fileNames;
-  }
-
-  function deleteDocument(index: number): any[] {
-    // Delete the document at the given index
-    // ...
-    return [];
-  }
-
-  function clearDocuments(): any[] {
-    // Clear all documents
-    // ...
-    return [];
-  }
+export default () => {
+  const vectorStore = new VectorStore();
 
   return {
-    addDocuments: async (req: Request, res: Response) => {
-      const documents = req.files as Express.Multer.File[];
+    getDocuments: async (req: Request, res: Response) => {
+      const { collectionName } = req.query;
 
-      savedDocuments.push(...documents);
+      const collection = await vectorStore.getCollection(
+        collectionName as string
+      );
 
-      documentLoader(documents);
+      const documents = await vectorStore.getDocuments(collection);
 
-      res.json(savedDocuments.map((file) => file.originalname));
+      res.json(documents);
     },
-    // deleteDocument endpoint
-    deleteDocuments: async (req: Request, res: Response) => {
-      const index = parseInt(req.params.index);
 
-      const updatedDocuments = deleteDocument(index);
+    addDocuments: async (req: Request, res: Response) => {
+      const files = req.files as Express.Multer.File[];
+
+      const collectionName = req.body.collectionName as string;
+
+      const promises = files.map((file: Express.Multer.File) =>
+        vectorStore.addDocuments(file)
+      );
+
+      await Promise.all(promises).then((results) =>
+        results.reduce((acc, cur) => [...acc, ...cur], [])
+      );
+
+      const collection = await vectorStore.getCollection(collectionName);
+      const documents = await vectorStore.getDocuments(collection);
+
+      res.json(documents);
+    },
+
+    deleteDocuments: async (req: Request, res: Response) => {
+      const { collectionName, fileName } = req.body;
+
+      const updatedDocuments = await vectorStore.deleteDocuments(
+        collectionName,
+        fileName
+      );
       res.json(updatedDocuments);
     },
 
     clearDocuments: async (req: Request, res: Response) => {
-      const clearedDocuments = clearDocuments();
-      res.json(clearedDocuments);
+      res.json();
     }
   };
 };

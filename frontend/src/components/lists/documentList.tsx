@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Button,
   Grid,
@@ -13,27 +13,52 @@ import AddIcon from '@mui/icons-material/Add';
 import UploadModal from '../modals/uploadModal';
 import FileIcon from '../fileIcon';
 import { SidebarItem } from '../containers/container.elements';
+import { DocumentsObjectInterface } from '../../types/documents';
+import AddItemHeader from '../headers/addItemHeader';
+import { CollectionList } from '../../types/collection';
+import { toast } from 'react-toastify';
 
-const DocumentsList = () => {
-  const [documentsUploaded, setDocumentsUploaded] = useState<string[]>([]);
+export interface DocumentsListProps {
+  documents: DocumentsObjectInterface[];
+  documentHandler: (documents: DocumentsObjectInterface[]) => void;
+  selectedCollection?: CollectionList;
+}
+
+const DocumentsList = ({
+  documents,
+  documentHandler,
+  selectedCollection
+}: DocumentsListProps) => {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const documentsUploadHandler = (documents: string[]) => {
-    setDocumentsUploaded(documents);
+  const documentsUploadHandler = (documents: DocumentsObjectInterface[]) => {
+    if (selectedCollection && selectedCollection.name) {
+      return documentHandler(documents);
+    }
+
+    toast.error('Please select a collection');
   };
 
-  const deleteDocument = async (index: number) => {
+  const deleteDocument = async (document: string) => {
+    if (!selectedCollection) {
+      throw new Error('Please select a collection');
+    }
+
     try {
-      const result = await fetch(
-        `http://localhost:4000/deleteDocument/${index}`,
-        { method: 'DELETE' }
-      );
+      const result = await fetch(`http://localhost:4000/documents/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collectionName: selectedCollection.name,
+          fileName: document
+        })
+      });
       const data = await result.json();
-      setDocumentsUploaded(data);
+      documentHandler(data);
     } catch (error) {
       console.error(error);
     }
@@ -41,18 +66,24 @@ const DocumentsList = () => {
 
   return (
     <SidebarItem>
-      <List>
-        {documentsUploaded.map((doc, index) => (
+      <AddItemHeader
+        title="Documents"
+        handleAddCollection={() => setOpen(true)}
+      />
+      <List
+        sx={{ flex: 1, overflow: 'auto', maxHeight: `calc(100vh - 500px)` }}
+      >
+        {Object.keys(documents).map((document, index) => (
           <ListItem key={index}>
             <Grid sx={{ mr: 1 }}>
-              <FileIcon fileName={doc} />
+              <FileIcon fileName={document} />
             </Grid>
-            <ListItemText primary={doc} />
+            <ListItemText primary={document} />
             <ListItemSecondaryAction>
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => deleteDocument(index)}
+                onClick={() => deleteDocument(document)}
               >
                 <Grid sx={{ ml: 1 }}>
                   <DeleteIcon />
@@ -62,17 +93,9 @@ const DocumentsList = () => {
           </ListItem>
         ))}
       </List>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        component="label"
-        onClick={() => setOpen(true)}
-        sx={{ alignSelf: 'flex-end' }}
-        fullWidth
-      >
-        Add Document
-      </Button>
+
       <UploadModal
+        selectedCollection={selectedCollection}
         open={open}
         onClose={handleClose}
         onUploadDocuments={documentsUploadHandler}

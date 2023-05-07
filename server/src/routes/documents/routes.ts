@@ -6,7 +6,8 @@ export default (router: Router, controller: Controller) => {
   const upload = multer();
 
   return router
+    .get('/documents', controller.getDocuments)
     .post('/documents', upload.array('documents'), controller.addDocuments)
-    .delete('/documents/:index', controller.deleteDocuments)
+    .post('/documents/delete', controller.deleteDocuments)
     .delete('/documents', controller.clearDocuments);
 };
