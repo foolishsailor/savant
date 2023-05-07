@@ -16,7 +16,6 @@ const DocumentSideBar = () => {
   };
 
   const handeDocuments = (documents: DocumentsObjectInterface[]) => {
-    console.log('DocumentsList', documents);
     setDocuments(documents);
   };
 
