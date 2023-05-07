@@ -75,7 +75,6 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             const { done, value } = await reader.read();
 
             if (done) {
-              console.log('Stream finished');
               return;
             }
 

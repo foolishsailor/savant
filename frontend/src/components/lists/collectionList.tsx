@@ -1,60 +1,134 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Button,
   Grid,
   IconButton,
   List,
-  ListItem,
+  ListItemButton,
   ListItemSecondaryAction,
   ListItemText
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import UploadModal from '../modals/uploadModal';
 import { useTheme } from '@mui/system';
 import { CollectionList } from '../../types/collection';
 import { SidebarItem } from '../containers/container.elements';
+import { toast } from 'react-toastify';
+import { DocumentsObjectInterface } from '../../types/documents';
+import SingleInputDropDown from '../dropdowns/singleInputDropDown';
 
-const DocumentsList = () => {
+export interface CollectionsListProps {
+  selectedCollection?: CollectionList;
+  documentHandler: (documents: DocumentsObjectInterface[]) => void;
+  handleSelectedCollection: (collection: CollectionList) => void;
+}
+
+const CollectionsList = ({
+  selectedCollection,
+  documentHandler,
+  handleSelectedCollection
+}: CollectionsListProps) => {
   const theme = useTheme();
   const [collections, setCollections] = useState<CollectionList[]>([]);
 
-  const [open, setOpen] = useState(false);
+  const handleAddCollection = async (collectionName: string) => {
+    try {
+      const result = await fetch(
+        `http://localhost:4000/collections?collectionName=${collectionName}`
+      );
 
-  const handleClose = () => {
-    setOpen(false);
+      const data = await result.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setCollections((prevCollections) => [...prevCollections, ...data]);
+      handleSelectedCollection(data[0]);
+    } catch (error) {
+      console.error(error);
+      toast.error('Failed to add collection: ' + error);
+    }
   };
 
   const deleteCollection = async (index: number) => {
     try {
+      const collection = collections[index];
       const result = await fetch(
-        `http://localhost:4000/deleteDocument/${index}`,
+        `http://localhost:4000/collections/${collection.name}`,
         { method: 'DELETE' }
       );
       const data = await result.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setCollections(data);
     } catch (error) {
       console.error(error);
+      toast.error('Failed to delete documents: ' + error);
     }
   };
 
   useEffect(() => {
-    const getDocuments = async () => {
+    const getCollections = async () => {
       try {
         const result = await fetch('http://localhost:4000/collections');
         const data = await result.json();
+
         setCollections(data);
       } catch (error) {
         console.error(error);
       }
     };
-    getDocuments();
+    getCollections();
   }, []);
 
+  useEffect(() => {
+    const setCollection = async () => {
+      try {
+        await fetch(
+          `http://localhost:4000/collections?collectionName=${selectedCollection?.name}`
+        );
+        const result = await fetch(
+          `http://localhost:4000/documents?collectionName=${selectedCollection?.name}`
+        );
+        const data = await result.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        documentHandler(data);
+      } catch (error) {
+        console.error(error);
+        toast.error('Failed to get documents: ' + error);
+      }
+    };
+
+    if (selectedCollection?.name) setCollection();
+  }, [selectedCollection]);
+
   return (
-    <SidebarItem>
-      <List>
+    <SidebarItem sx={{ overflow: 'auto' }}>
+      <SingleInputDropDown
+        title={'collections'}
+        handleAddCollection={handleAddCollection}
+      />
+      <List sx={{ flex: 1 }}>
         {collections.map((collection, index) => (
-          <ListItem key={index}>
+          <ListItemButton
+            key={index}
+            onClick={() => handleSelectedCollection(collection)}
+            selected={selectedCollection?.name === collection.name}
+            sx={{
+              '&.Mui-selected': {
+                backgroundColor: theme.palette.action.selected
+              },
+              '&:hover': {
+                cursor: 'pointer'
+              }
+            }}
+          >
             <ListItemText primary={collection.name} />
             <ListItemSecondaryAction>
               <IconButton
@@ -67,18 +141,9 @@ const DocumentsList = () => {
                 </Grid>
               </IconButton>
             </ListItemSecondaryAction>
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        component="label"
-        onClick={() => setOpen(true)}
-        fullWidth
-      >
-        Add Collection
-      </Button>
 
       {/* <UploadModal
         open={open}
@@ -89,4 +154,4 @@ const DocumentsList = () => {
   );
 };
 
-export default DocumentsList;
+export default CollectionsList;

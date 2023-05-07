@@ -34,7 +34,6 @@ const RevisionTabs = ({ tabs }: TabsProps) => {
   };
 
   useEffect(() => {
-    console.log('value', value, tabs.length - 1);
     if (tabs.length - 1 !== numberTabs) {
       setValue(tabs.length - 1);
       setNumberTabs(tabs.length - 1);

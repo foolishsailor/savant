@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container } from '@mui/material';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { PageContainer } from './components/containers/pageContainer';
+import { PageContainer } from './components/containers/container.elements';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
