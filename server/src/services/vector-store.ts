@@ -89,8 +89,6 @@ export class VectorStore {
   async deleteDocuments(collectionName: string, filename: string) {
     const collection = await this.client.getCollection(collectionName);
 
-    console.log('=======================', collectionName, collection);
-
     await collection.delete(undefined, { filename });
 
     const documents = await collection.get();

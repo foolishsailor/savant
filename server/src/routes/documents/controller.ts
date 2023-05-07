@@ -46,8 +46,6 @@ export default () => {
     deleteDocuments: async (req: Request, res: Response) => {
       const { collectionName, fileName } = req.body;
 
-      console.log('=======================', collectionName, fileName);
-
       const updatedDocuments = await vectorStore.deleteDocuments(
         collectionName,
         fileName
