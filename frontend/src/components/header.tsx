@@ -1,20 +1,21 @@
 import React from 'react';
-import logo from '../assets/logo192.png';
-import Typography from '@mui/material/Typography';
+import { setSystemPrompt } from '../store/conversationSlice';
 import { Grid, TextField } from '@mui/material';
+import { useDispatch } from 'react-redux';
 
-export interface HeaderProps {
-  onUpdateSystemPrompt: (prompt: string) => void;
-}
+const Header = () => {
+  const dispatch = useDispatch();
+  const systemPromptHandler = (prompt: string) => {
+    dispatch(setSystemPrompt(prompt));
+  };
 
-const Header = ({ onUpdateSystemPrompt }: HeaderProps) => {
   return (
     <Grid sx={{ display: 'flex', alignItems: 'center', p: 1, gap: 2 }}>
       <Grid sx={{ flex: 1 }}>
         <TextField
           label="System Prompt (optional)"
           variant="outlined"
-          onChange={(event) => onUpdateSystemPrompt(event.target.value)}
+          onChange={(event) => systemPromptHandler(event.target.value)}
           multiline
           rows={2}
           fullWidth

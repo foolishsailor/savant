@@ -17,18 +17,19 @@ import { DocumentsObjectInterface } from '../../types/documents';
 import AddItemHeader from '../headers/addItemHeader';
 import { CollectionList } from '../../types/collection';
 import { toast } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { setDocuments } from '../../store/documentsSlice';
 
-export interface DocumentsListProps {
-  documents: DocumentsObjectInterface[];
-  documentHandler: (documents: DocumentsObjectInterface[]) => void;
-  selectedCollection?: CollectionList;
-}
+const DocumentsList = () => {
+  const dispatch = useDispatch();
+  const selectedCollection = useSelector(
+    (state: RootState) => state.documents.selectedCollection
+  );
+  const documents = useSelector(
+    (state: RootState) => state.documents.documents
+  );
 
-const DocumentsList = ({
-  documents,
-  documentHandler,
-  selectedCollection
-}: DocumentsListProps) => {
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
@@ -37,7 +38,7 @@ const DocumentsList = ({
 
   const documentsUploadHandler = (documents: DocumentsObjectInterface[]) => {
     if (selectedCollection && selectedCollection.name) {
-      return documentHandler(documents);
+      return dispatch(setDocuments(documents));
     }
 
     toast.error('Please select a collection');
@@ -58,7 +59,8 @@ const DocumentsList = ({
         })
       });
       const data = await result.json();
-      documentHandler(data);
+
+      if (data) dispatch(setDocuments(data));
     } catch (error) {
       console.error(error);
     }

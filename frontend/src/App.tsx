@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Provider } from 'react-redux';
 import { Container } from '@mui/material';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-import { PageContainer } from './components/containers/container.elements';
+import store from './store';
 
+import { PageContainer } from './components/containers/container.elements';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import AppBarComponent from './components/appBar';
@@ -32,15 +34,17 @@ const App: React.FC = () => {
         theme="colored"
       />
       <CssBaseline />
-      <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
-        <PageContainer>
-          <AppBarComponent />
-          <ContentContainer>
-            <Conversation />
-            <DocumentSideBar />
-          </ContentContainer>
-        </PageContainer>
-      </Container>
+      <Provider store={store}>
+        <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
+          <PageContainer>
+            <AppBarComponent />
+            <ContentContainer>
+              <Conversation />
+              <DocumentSideBar />
+            </ContentContainer>
+          </PageContainer>
+        </Container>
+      </Provider>
     </ThemeProvider>
   );
 };
