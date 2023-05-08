@@ -14,19 +14,21 @@ import { SidebarItem } from '../containers/container.elements';
 import { toast } from 'react-toastify';
 import { DocumentsObjectInterface } from '../../types/documents';
 import SingleInputDropDown from '../dropdowns/singleInputDropDown';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../store';
+import {
+  setDocuments,
+  setSelectedCollection
+} from '../../store/documentsSlice';
 
-export interface CollectionsListProps {
-  selectedCollection?: CollectionList;
-  documentHandler: (documents: DocumentsObjectInterface[]) => void;
-  handleSelectedCollection: (collection: CollectionList) => void;
-}
-
-const CollectionsList = ({
-  selectedCollection,
-  documentHandler,
-  handleSelectedCollection
-}: CollectionsListProps) => {
+const CollectionsList = () => {
   const theme = useTheme();
+  const dispatch = useDispatch();
+
+  const selectedCollection = useSelector(
+    (state: RootState) => state.documents.selectedCollection
+  );
+
   const [collections, setCollections] = useState<CollectionList[]>([]);
 
   const handleAddCollection = async (collectionName: string) => {
@@ -42,7 +44,10 @@ const CollectionsList = ({
       }
 
       setCollections((prevCollections) => [...prevCollections, ...data]);
-      handleSelectedCollection(data[0]);
+
+      const documents = data[0];
+
+      dispatch(setSelectedCollection(documents));
     } catch (error) {
       console.error(error);
       toast.error('Failed to add collection: ' + error);
@@ -98,7 +103,7 @@ const CollectionsList = ({
           throw new Error(data.error);
         }
 
-        documentHandler(data);
+        if (data[0]) dispatch(setDocuments(data[0]));
       } catch (error) {
         console.error(error);
         toast.error('Failed to get documents: ' + error);
@@ -118,7 +123,7 @@ const CollectionsList = ({
         {collections.map((collection, index) => (
           <ListItemButton
             key={index}
-            onClick={() => handleSelectedCollection(collection)}
+            onClick={() => dispatch(setSelectedCollection(collection))}
             selected={selectedCollection?.name === collection.name}
             sx={{
               '&.Mui-selected': {

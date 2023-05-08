@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   RadioGroup,
@@ -12,13 +12,17 @@ import {
 
 import { Message } from '../types/message';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import { useDispatch } from 'react-redux';
+import { setConversation as setConversationState } from '../store/conversationSlice';
 
-export interface QueryInputProps {
-  addResponse: React.Dispatch<React.SetStateAction<Message[]>>;
-  systemPrompt: string;
-}
-
-const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
+const QueryInput = () => {
+  const dispatch = useDispatch();
+  const [conversation, setConversation] = useState<Message[]>([]);
+  const systemPrompt = useSelector(
+    (state: RootState) => state.conversation.systemPrompt
+  );
   const [inputText, setInputText] = useState('');
   const [sliderValue, setSliderValue] = useState(0.5);
   const [radioValue, setRadioValue] = useState('simple');
@@ -27,6 +31,10 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
   };
+
+  useEffect(() => {
+    dispatch(setConversationState(conversation));
+  }, [conversation]);
 
   const handleSliderChange = (
     event: Event,
@@ -47,8 +55,14 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
   };
 
   const queryDocuments = async () => {
-    addResponse((prev) => [...prev, { source: 'user', content: [inputText] }]);
-    addResponse((prev) => [...prev, { source: 'assistant', content: [''] }]);
+    setConversation((prev) => [
+      ...prev,
+      { source: 'user', content: [inputText] }
+    ]);
+    setConversation((prev) => [
+      ...prev,
+      { source: 'assistant', content: [''] }
+    ]);
     setInputText('');
 
     try {
@@ -82,7 +96,7 @@ const QueryInput = ({ addResponse, systemPrompt }: QueryInputProps) => {
             const decodedChunk = new TextDecoder().decode(value);
 
             if (REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
-              addResponse((prev) => {
+              setConversation((prev) => {
                 const commandFilteredOut = decodedChunk
                   .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
                   .join('');

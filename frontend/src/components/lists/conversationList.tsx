@@ -1,25 +1,18 @@
-import { useState } from 'react';
-import {
-  Grid,
-  useTheme,
-  Typography,
-  Avatar,
-  Tabs,
-  Tab,
-  Box
-} from '@mui/material';
-import { Message } from '../../types/message';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
+import { Grid, useTheme, Typography, Avatar } from '@mui/material';
+
 import Markdown from '../markdown';
 import { AiOutlineRobot } from 'react-icons/ai';
 import { BsPerson } from 'react-icons/bs';
 import RevisionTabs from '../revisionTabs';
 
-interface Props {
-  messages: Message[];
-}
-
-const ConversationList = ({ messages }: Props) => {
+const ConversationList = () => {
   const theme = useTheme();
+
+  const conversation = useSelector(
+    (state: RootState) => state.conversation.conversation
+  );
 
   return (
     <Grid
@@ -32,7 +25,7 @@ const ConversationList = ({ messages }: Props) => {
         overflowY: 'auto'
       }}
     >
-      {messages.map((message, index) => {
+      {conversation.map((message, index) => {
         return (
           <Grid
             key={index}
