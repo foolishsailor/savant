@@ -21,7 +21,5 @@ export const reducers = {
     action: PayloadAction<Message[]>
   ) => {
     state.conversation = [...state.conversation, ...action.payload];
-
-    console.log('addToConversation', state.conversation);
   }
 };

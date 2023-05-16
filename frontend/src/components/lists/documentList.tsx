@@ -1,27 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import {
-  Button,
   Grid,
   IconButton,
   List,
-  ListItem,
+  ListItem as ListItemButton,
   ListItemSecondaryAction,
-  ListItemText
+  ListItemText,
+  useTheme
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import UploadModal from '../modals/uploadModal';
 import FileIcon from '../fileIcon';
 import { SidebarItem } from '../containers/container.elements';
-import { DocumentsObjectInterface } from '../../types/documents';
+import { DocumentsObject } from '../../types/documents';
 import AddItemHeader from '../headers/addItemHeader';
-import { CollectionList } from '../../types/collection';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { setDocuments } from '../../store/documentsSlice';
+import {
+  setDocuments,
+  setSelectedDocument,
+  setDocumentLightBoxIsOpen
+} from '../../store/documentsSlice';
 
 const DocumentsList = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
   const selectedCollection = useSelector(
     (state: RootState) => state.documents.selectedCollection
@@ -30,13 +33,20 @@ const DocumentsList = () => {
     (state: RootState) => state.documents.documents
   );
 
+  const [selectedDocumentListItem, setSelectedDocumentListItem] = useState('');
   const [open, setOpen] = useState(false);
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  const documentsUploadHandler = (documents: DocumentsObjectInterface[]) => {
+  const selectDocumentHandler = (documentName: string) => {
+    dispatch(setSelectedDocument(documentName));
+    dispatch(setDocumentLightBoxIsOpen(true));
+    setSelectedDocumentListItem(documentName);
+  };
+
+  const documentsUploadHandler = (documents: DocumentsObject) => {
     if (selectedCollection && selectedCollection.name) {
       return dispatch(setDocuments(documents));
     }
@@ -75,25 +85,36 @@ const DocumentsList = () => {
       <List
         sx={{ flex: 1, overflow: 'auto', maxHeight: `calc(100vh - 500px)` }}
       >
-        {Object.keys(documents).map((document, index) => (
-          <ListItem key={index}>
-            <Grid sx={{ mr: 1 }}>
-              <FileIcon fileName={document} />
-            </Grid>
-            <ListItemText primary={document} />
-            <ListItemSecondaryAction>
-              <IconButton
-                edge="end"
-                aria-label="delete"
-                onClick={() => deleteDocument(document)}
-              >
-                <Grid sx={{ ml: 1 }}>
-                  <DeleteIcon />
-                </Grid>
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
+        {documents &&
+          Object.keys(documents).map((document: string, index: number) => (
+            <ListItemButton
+              key={index}
+              onClick={() => selectDocumentHandler(document)}
+              sx={{
+                cursor: 'pointer',
+                backgroundColor:
+                  selectedDocumentListItem === document
+                    ? theme.palette.action.selected
+                    : 'transparent'
+              }}
+            >
+              <Grid sx={{ mr: 1 }}>
+                <FileIcon fileName={document} />
+              </Grid>
+              <ListItemText primary={document} />
+              <ListItemSecondaryAction>
+                <IconButton
+                  edge="end"
+                  aria-label="delete"
+                  onClick={() => deleteDocument(document)}
+                >
+                  <Grid sx={{ ml: 1 }}>
+                    <DeleteIcon />
+                  </Grid>
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItemButton>
+          ))}
       </List>
 
       <UploadModal

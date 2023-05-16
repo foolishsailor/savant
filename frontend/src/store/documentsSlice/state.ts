@@ -1,18 +1,23 @@
-import { DocumentsObjectInterface } from '../../types/documents';
-import { Message } from '../../types/message';
+import { DocumentsObject } from '../../types/documents';
 import { CollectionList } from '../../types/collection';
 
 export interface DocumentState {
+  documentLightBoxIsOpen: boolean;
+  documentLightBoxOnClose: () => void;
+  selectedDocument: string | undefined;
   selectedCollection: CollectionList;
-  collections: Message[];
-  documents: DocumentsObjectInterface[];
+  collections: CollectionList[];
+  documents: DocumentsObject | undefined;
 }
 
 export const initialState: DocumentState = {
+  documentLightBoxIsOpen: false,
+  documentLightBoxOnClose: () => {},
+  selectedDocument: undefined,
   selectedCollection: {
     name: '',
     metadata: {}
   },
   collections: [],
-  documents: []
+  documents: undefined
 };

@@ -9,16 +9,17 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/system';
-import { CollectionList } from '../../types/collection';
+
 import { SidebarItem } from '../containers/container.elements';
 import { toast } from 'react-toastify';
-import { DocumentsObjectInterface } from '../../types/documents';
+
 import SingleInputDropDown from '../dropdowns/singleInputDropDown';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import {
   setDocuments,
-  setSelectedCollection
+  setSelectedCollection,
+  setCollections
 } from '../../store/documentsSlice';
 
 const CollectionsList = () => {
@@ -29,7 +30,9 @@ const CollectionsList = () => {
     (state: RootState) => state.documents.selectedCollection
   );
 
-  const [collections, setCollections] = useState<CollectionList[]>([]);
+  const collections = useSelector(
+    (state: RootState) => state.documents.collections
+  );
 
   const handleAddCollection = async (collectionName: string) => {
     try {
@@ -43,7 +46,7 @@ const CollectionsList = () => {
         throw new Error(data.error);
       }
 
-      setCollections((prevCollections) => [...prevCollections, ...data]);
+      dispatch(setCollections([...collections, ...data]));
 
       const documents = data[0];
 
@@ -67,7 +70,7 @@ const CollectionsList = () => {
         throw new Error(data.error);
       }
 
-      setCollections(data);
+      dispatch(setCollections(data));
     } catch (error) {
       console.error(error);
       toast.error('Failed to delete documents: ' + error);
@@ -80,7 +83,7 @@ const CollectionsList = () => {
         const result = await fetch('http://localhost:4000/collections');
         const data = await result.json();
 
-        setCollections(data);
+        dispatch(setCollections(data));
       } catch (error) {
         console.error(error);
       }
@@ -103,7 +106,7 @@ const CollectionsList = () => {
           throw new Error(data.error);
         }
 
-        if (data[0]) dispatch(setDocuments(data[0]));
+        dispatch(setDocuments(data));
       } catch (error) {
         console.error(error);
         toast.error('Failed to get documents: ' + error);
@@ -124,14 +127,12 @@ const CollectionsList = () => {
           <ListItemButton
             key={index}
             onClick={() => dispatch(setSelectedCollection(collection))}
-            selected={selectedCollection?.name === collection.name}
             sx={{
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.action.selected
-              },
-              '&:hover': {
-                cursor: 'pointer'
-              }
+              cursor: 'pointer',
+              backgroundColor:
+                selectedCollection?.name === collection.name
+                  ? theme.palette.action.selected
+                  : 'transparent'
             }}
           >
             <ListItemText primary={collection.name} />
@@ -149,12 +150,6 @@ const CollectionsList = () => {
           </ListItemButton>
         ))}
       </List>
-
-      {/* <UploadModal
-        open={open}
-        onClose={handleClose}
-        onUploadDocuments={documentsUploadHandler}
-      /> */}
     </SidebarItem>
   );
 };

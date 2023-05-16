@@ -11,6 +11,7 @@ import AppBarComponent from './components/appBar';
 import { ContentContainer } from './components/containers/container.elements';
 import DocumentSideBar from './components/documentSideBar';
 import Conversation from './components/conversation';
+import DocumentLightBox from './components/documentLightBox';
 
 const darkTheme = createTheme({
   palette: {
@@ -36,6 +37,7 @@ const App: React.FC = () => {
       <CssBaseline />
       <Provider store={store}>
         <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
+          <DocumentLightBox />
           <PageContainer>
             <AppBarComponent />
             <ContentContainer>

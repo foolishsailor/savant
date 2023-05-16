@@ -1,6 +1,11 @@
-export interface DocumentsObjectInterface {
-  id: string;
+interface Metadata {
+  [key: string]: any;
+}
+
+export interface Document {
   embedding?: any;
   document: string;
-  metadata?: any;
+  metadata?: Metadata;
 }
+
+export type DocumentsObject = Record<string, Document[]>;

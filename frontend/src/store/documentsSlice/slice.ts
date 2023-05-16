@@ -9,7 +9,13 @@ const slice = createSlice({
   reducers
 });
 
-export const { setSelectedCollection, setDocuments } = slice.actions;
+export const {
+  setSelectedCollection,
+  setDocuments,
+  setCollections,
+  setDocumentLightBoxIsOpen,
+  setSelectedDocument
+} = slice.actions;
 
 const documentsSlice = slice.reducer;
 
