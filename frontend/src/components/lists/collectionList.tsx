@@ -9,25 +9,30 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/system';
-import { CollectionList } from '../../types/collection';
+
 import { SidebarItem } from '../containers/container.elements';
 import { toast } from 'react-toastify';
-import { DocumentsObjectInterface } from '../../types/documents';
+
 import SingleInputDropDown from '../dropdowns/singleInputDropDown';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../../store';
+import {
+  setDocuments,
+  setSelectedCollection,
+  setCollections
+} from '../../store/documentsSlice';
 
-export interface CollectionsListProps {
-  selectedCollection?: CollectionList;
-  documentHandler: (documents: DocumentsObjectInterface[]) => void;
-  handleSelectedCollection: (collection: CollectionList) => void;
-}
-
-const CollectionsList = ({
-  selectedCollection,
-  documentHandler,
-  handleSelectedCollection
-}: CollectionsListProps) => {
+const CollectionsList = () => {
   const theme = useTheme();
-  const [collections, setCollections] = useState<CollectionList[]>([]);
+  const dispatch = useDispatch();
+
+  const selectedCollection = useSelector(
+    (state: RootState) => state.documents.selectedCollection
+  );
+
+  const collections = useSelector(
+    (state: RootState) => state.documents.collections
+  );
 
   const handleAddCollection = async (collectionName: string) => {
     try {
@@ -41,8 +46,11 @@ const CollectionsList = ({
         throw new Error(data.error);
       }
 
-      setCollections((prevCollections) => [...prevCollections, ...data]);
-      handleSelectedCollection(data[0]);
+      dispatch(setCollections([...collections, ...data]));
+
+      const documents = data[0];
+
+      dispatch(setSelectedCollection(documents));
     } catch (error) {
       console.error(error);
       toast.error('Failed to add collection: ' + error);
@@ -62,7 +70,7 @@ const CollectionsList = ({
         throw new Error(data.error);
       }
 
-      setCollections(data);
+      dispatch(setCollections(data));
     } catch (error) {
       console.error(error);
       toast.error('Failed to delete documents: ' + error);
@@ -75,7 +83,7 @@ const CollectionsList = ({
         const result = await fetch('http://localhost:4000/collections');
         const data = await result.json();
 
-        setCollections(data);
+        dispatch(setCollections(data));
       } catch (error) {
         console.error(error);
       }
@@ -98,7 +106,7 @@ const CollectionsList = ({
           throw new Error(data.error);
         }
 
-        documentHandler(data);
+        dispatch(setDocuments(data));
       } catch (error) {
         console.error(error);
         toast.error('Failed to get documents: ' + error);
@@ -118,15 +126,13 @@ const CollectionsList = ({
         {collections.map((collection, index) => (
           <ListItemButton
             key={index}
-            onClick={() => handleSelectedCollection(collection)}
-            selected={selectedCollection?.name === collection.name}
+            onClick={() => dispatch(setSelectedCollection(collection))}
             sx={{
-              '&.Mui-selected': {
-                backgroundColor: theme.palette.action.selected
-              },
-              '&:hover': {
-                cursor: 'pointer'
-              }
+              cursor: 'pointer',
+              backgroundColor:
+                selectedCollection?.name === collection.name
+                  ? theme.palette.action.selected
+                  : 'transparent'
             }}
           >
             <ListItemText primary={collection.name} />
@@ -144,12 +150,6 @@ const CollectionsList = ({
           </ListItemButton>
         ))}
       </List>
-
-      {/* <UploadModal
-        open={open}
-        onClose={handleClose}
-        onUploadDocuments={documentsUploadHandler}
-      /> */}
     </SidebarItem>
   );
 };

@@ -11,13 +11,13 @@ import { useState } from 'react';
 import { useTheme } from '@mui/system';
 import UploadList from '../lists/uploadList';
 import { toast } from 'react-toastify';
-import { DocumentsObjectInterface } from '../../types/documents';
+import { DocumentsObject } from '../../types/documents';
 import { CollectionList } from '../../types/collection';
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onUploadDocuments: (document: DocumentsObjectInterface[]) => void;
+  onUploadDocuments: (document: DocumentsObject) => void;
   selectedCollection?: CollectionList;
 }
 
