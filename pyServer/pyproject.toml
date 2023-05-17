@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "savantpy"
+version = "0.1.0"
+description = ""
+authors = ["jc.durbin <jc.durbin@ardanis.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.3.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
