@@ -52,10 +52,9 @@ export const ConversationContainer = styled(Grid)(({ theme }) => ({
 export const ModalContentContainer = styled(Grid)(({ theme }) => ({
   backgroundColor: theme.palette.grey[800],
   flex: 1,
-  overFlow: 'auto',
+
   display: 'flex',
-  height: 'calc(100vh - 160px)',
-  padding: theme.spacing(1)
+  height: 'calc(100vh - 160px)'
 }));
 
 export const QueryContainer = styled(Grid)(({ theme }) => ({
