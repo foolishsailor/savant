@@ -3,6 +3,7 @@ import { RetrievalQAChain, loadQARefineChain } from 'langchain/chains';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { StreamingCallbackHandler } from '@/langchain/callbacks/streaming-callback-handler';
+import { ConsoleCallbackHandler } from '@/langchain/callbacks/console-callback-handler';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
 import { ChromaClient, Collection } from 'chromadb';
@@ -144,7 +145,7 @@ export class VectorStore {
           query: prompt,
           temperature
         },
-        [new StreamingCallbackHandler()]
+        [new StreamingCallbackHandler(), new ConsoleCallbackHandler()]
       );
 
       this.chatHistory.push(res.output_text);
