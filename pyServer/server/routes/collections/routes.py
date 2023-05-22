@@ -15,11 +15,11 @@ def get_collections_route():
     collections: List[Collection] = []
 
     if collection_name:
-        vector_store.setCreateChromaStore(collection_name)
-        collection = vector_store.getCollection(collection_name)
+        vector_store.set_create_chroma_store(collection_name)
+        collection = vector_store.get_collection(collection_name)
         collections = [collection] if collection else []
     else:
-        collections = vector_store.listCollections()
+        collections = vector_store.list_collections()
 
     return jsonify(collections)
 
