@@ -7,22 +7,22 @@ from chromadb.api.models.Collection import Collection
 from chromadb.api.types import GetResult
 
 
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.chains.summarize import load_summarize_chain
 
-from pyServer.server.langchain.callbacks.streaming_callback_handler import (
+from server.langchain.callbacks.streaming_callback_handler import (
     StreamingCallbackHandler,
 )
-from pyServer.server.langchain.callbacks.console_callback_handler import (
+from server.langchain.callbacks.console_callback_handler import (
     ConsoleCallbackHandler,
 )
 
-from pyServer.server.services.loaders import loader
-from pyServer.server.utils.parse import process_documents_into_objects
+from server.services.loaders import loader
+from server.utils.parse import process_documents_into_objects
 
 from typing import List, Dict, IO
 
@@ -31,8 +31,7 @@ load_dotenv()
 
 class VectorStore:
     client = chromadb.Client()
-    model = OpenAI(
-        client="ZZZ",
+    model = ChatOpenAI(
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         model_name=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
         streaming=True,
@@ -44,7 +43,7 @@ class VectorStore:
     def set_create_chroma_store(self, name: str):
         self.store = Chroma(
             embedding_function=OpenAIEmbeddings(
-                client="ZZZ", openai_api_key=os.getenv("OPENAI_API_KEY")
+                openai_api_key=os.getenv("OPENAI_API_KEY")
             ),
             collection_name=name,
         )

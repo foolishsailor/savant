@@ -3,7 +3,7 @@ import json
 from werkzeug.utils import secure_filename
 import os
 
-from pyServer.server.services.vector_store import VectorStore
+from server.services.vector_store import VectorStore
 from .service import get_documents, create_document, delete_document
 from typing import List
 
