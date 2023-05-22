@@ -9,8 +9,8 @@ load_dotenv()
 class StreamingCallbackHandler(BaseCallbackHandler):
     _stream_callback = None
 
-    @staticmethod
-    def stream_callback(function):
+    @classmethod
+    def set_stream_callback(cls, function):
         StreamingCallbackHandler._stream_callback = staticmethod(function)
 
     @property
@@ -19,7 +19,7 @@ class StreamingCallbackHandler(BaseCallbackHandler):
 
     @stream_callback.setter
     def stream_callback(self, function):
-        StreamingCallbackHandler.stream_callback(function)
+        StreamingCallbackHandler.set_stream_callback(function)
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
         if self.stream_callback:

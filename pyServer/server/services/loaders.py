@@ -1,4 +1,5 @@
-import io
+from werkzeug.datastructures import FileStorage
+from langchain.docstore.document import Document
 from langchain.document_loaders import (
     PyPDFLoader,
     JSONLoader,
@@ -7,13 +8,12 @@ from langchain.document_loaders import (
     PyMuPDFLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from typing import Any, Dict, Callable, List, Union
+from typing import Any, Dict, List, IO
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 
 loaders = {
-    "json": lambda file: JSONLoader(file),
-    "pdf": lambda file: PyPDFium2Loader(file, split_pages=False),
+    "pdf": lambda file: PyPDFium2Loader(file),
 }
 
 
@@ -21,15 +21,22 @@ def get_file_extension(filename: str) -> str:
     return filename.rsplit(".", 1)[-1].lower()
 
 
-def loader(file: io.BytesIO, filename: str) -> List[Dict[str, Any]]:
+def loader(file_path: str, filename: str) -> List[Document]:
+    if not filename or file_path:
+        return []
+
     extension = get_file_extension(filename)
     load_fn = loaders.get(extension)
 
     if not load_fn:
         raise ValueError(f"Unsupported file extension: {extension}")
 
-    file_loader = load_fn(file)
+    file_loader = load_fn(file_path)
 
-    docs = file_loader.load_and_split(text_splitter)
+    docs: List[Document] = file_loader.load_and_split(text_splitter)
 
-    return [{"data": doc, "metadata": {"filename": filename}} for doc in docs]
+    for doc in docs:
+        metadata = doc.metadata
+        metadata["filename"] = filename
+
+    return docs
