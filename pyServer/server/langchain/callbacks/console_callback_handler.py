@@ -6,12 +6,12 @@ from langchain.schema import LLMResult, AgentAction, AgentFinish
 from typing import List, Dict, Union, Any
 
 
-class StreamingCallbackHandler(BaseCallbackHandler):
+class ConsoleCallbackHandler(BaseCallbackHandler):
     _stream_callback = None
 
     @staticmethod
     def stream_callback(function):
-        StreamingCallbackHandler._stream_callback = staticmethod(function)
+        ConsoleCallbackHandler._stream_callback = staticmethod(function)
 
     @property
     def stream_callback(self):
@@ -19,7 +19,7 @@ class StreamingCallbackHandler(BaseCallbackHandler):
 
     @stream_callback.setter
     def stream_callback(self, function):
-        StreamingCallbackHandler.stream_callback(function)
+        ConsoleCallbackHandler.stream_callback(function)
 
     def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any

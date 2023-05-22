@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from werkzeug.datastructures import FileStorage
 
 import chromadb
 from chromadb.config import Settings
@@ -12,9 +11,14 @@ from langchain.llms import OpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
+from langchain.chains import RetrievalQA
+from langchain.chains.summarize import load_summarize_chain
 
 from pyServer.server.langchain.callbacks.streaming_callback_handler import (
     StreamingCallbackHandler,
+)
+from pyServer.server.langchain.callbacks.console_callback_handler import (
+    ConsoleCallbackHandler,
 )
 
 from pyServer.server.services.loaders import loader
@@ -77,6 +81,8 @@ class VectorStore:
         self,
         question: str,
         system_prompt: str,
+        query_type: str,
+        temperature: int,
         callback,
     ):
         StreamingCallbackHandler.set_stream_callback(callback)
@@ -104,3 +110,28 @@ class VectorStore:
             question=question,
             chat_history=self.chat_history,
         )
+
+        if self.store and query_type == "refine":
+            chain = RetrievalQA(
+                combine_documents_chain=load_summarize_chain(
+                    self.model, chain_type="refine"
+                ),
+                retriever=self.store.asRetriever(),
+            )
+
+            res = chain.call(
+                {"chainType": "stuff", "query": prompt, "temperature": temperature},
+                [StreamingCallbackHandler(), ConsoleCallbackHandler()],
+            )
+
+            self.chat_history.append(res.output_text)
+        else:
+            if VectorStore.store:
+                chain = RetrievalQA.fromLLM(self.model, VectorStore.store.asRetriever())
+
+                res = chain.call(
+                    {"chainType": "stuff", "query": prompt, "temperature": temperature},
+                    [StreamingCallbackHandler(), ConsoleCallbackHandler()],
+                )
+
+                self.chat_history.append(res.text)
