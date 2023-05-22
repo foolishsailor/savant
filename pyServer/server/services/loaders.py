@@ -3,9 +3,9 @@ from langchain.docstore.document import Document
 from langchain.document_loaders import (
     PyPDFLoader,
     JSONLoader,
-    PyPDFium2Loader,
-    PDFMinerLoader,
-    PyMuPDFLoader,
+    TextLoader,
+    CSVLoader,
+    Docx2txtLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from typing import Any, Dict, List, IO
@@ -13,7 +13,15 @@ from typing import Any, Dict, List, IO
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
 
 loaders = {
-    "pdf": lambda file: PyPDFium2Loader(file),
+    "json": lambda file: JSONLoader(file, "/texts"),
+    "pdf": lambda file: PyPDFLoader(file),
+    "txt": lambda file: TextLoader(file),
+    "tsx": lambda file: TextLoader(file),
+    "ts": lambda file: TextLoader(file),
+    "js": lambda file: TextLoader(file),
+    "css": lambda file: TextLoader(file),
+    "csv": lambda file: CSVLoader(file),
+    "docx": lambda file: Docx2txtLoader(file),
 }
 
 
