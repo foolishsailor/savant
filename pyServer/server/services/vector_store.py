@@ -30,6 +30,7 @@ load_dotenv()
 
 
 class VectorStore:
+    store: Chroma = None
     client = chromadb.Client()
     model = ChatOpenAI(
         openai_api_key=os.getenv("OPENAI_API_KEY"),
@@ -40,8 +41,9 @@ class VectorStore:
     )
     chat_history: List[str] = []
 
-    def set_create_chroma_store(self, name: str):
-        self.store = Chroma(
+    @classmethod
+    def set_create_chroma_store(cls, name: str):
+        cls.store = Chroma(
             embedding_function=OpenAIEmbeddings(
                 openai_api_key=os.getenv("OPENAI_API_KEY")
             ),
