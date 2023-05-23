@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify, request, Response
 from server.services.vector_store import VectorStore
 from chromadb.api.models.Collection import Collection
 from .service import get_collections, create_collection, delete_collection
-
+import json
 from typing import List
 
 collections = Blueprint("collections", __name__)
@@ -23,14 +23,36 @@ def get_collections_route():
     else:
         collections = vector_store.list_collections()
 
-    return jsonify(collections)
+    result = [
+        {"name": collection.name, "metadata": collection.metadata}
+        for collection in collections
+    ]
+
+    return json.dumps(result)
 
 
 @collections.route("/collections", methods=["POST"])
 def post_collections_route():
+    vector_store = VectorStore()
     data = request.get_json()
-    result = create_collection(data)
-    return jsonify(result)
+    collection_name = data.get("collectionName")
+
+    if not collection_name:
+        return jsonify({"error": "collectionName is required"})
+
+    new_result = vector_store.create_collection(collection_name)
+
+    if not new_result:
+        return jsonify({"error": "Error creating collection"})
+
+    collections = vector_store.list_collections()
+
+    result = [
+        {"name": collection.name, "metadata": collection.metadata}
+        for collection in collections
+    ]
+
+    return json.dumps(result)
 
 
 @collections.route("/collections/<name>", methods=["DELETE"])

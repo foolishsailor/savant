@@ -5,6 +5,7 @@ import chromadb
 from chromadb.config import Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import GetResult
+from flask import jsonify
 
 
 from langchain.chat_models import ChatOpenAI
@@ -31,7 +32,13 @@ load_dotenv()
 
 class VectorStore:
     store: Chroma = None
-    client = chromadb.Client()
+    client = chromadb.Client(
+        Settings(
+            chroma_api_impl="rest",
+            chroma_server_host="localhost",
+            chroma_server_http_port="8000",
+        )
+    )
     model = ChatOpenAI(
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         model_name=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
@@ -51,6 +58,8 @@ class VectorStore:
         )
 
     def list_collections(self):
+        print(f"list collections............ {self.client}")
+
         return self.client.list_collections()
 
     def delete_collection(self, name: str):
@@ -58,6 +67,14 @@ class VectorStore:
 
     def get_collection(self, name: str):
         return self.client.get_collection(name)
+
+    def create_collection(self, name: str):
+        print(f"create collection----------{name}")
+        result = self.client.create_collection(name=name, get_or_create=True)
+
+        print(f"result----------{result}")
+
+        return result
 
     def get_documents(self, collection: Collection, query: Dict = {}):
         documents: GetResult = collection.get(where_document=query)

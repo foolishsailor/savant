@@ -656,6 +656,22 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-cors"
+version = "3.0.10"
+description = "A Flask extension adding a decorator for CORS support"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Flask-Cors-3.0.10.tar.gz", hash = "sha256:b60839393f3b84a0f3746f6cdca56c1ad7426aa738b70d6c61375857823181de"},
+    {file = "Flask_Cors-3.0.10-py2.py3-none-any.whl", hash = "sha256:74efc975af1194fc7891ff5cd85b0f7478be4f7f59fe158102e91abb72bb4438"},
+]
+
+[package.dependencies]
+Flask = ">=0.9"
+Six = "*"
+
+[[package]]
 name = "frozenlist"
 version = "1.3.3"
 description = "A list-like structure which implements collections.abc.MutableSequence"
@@ -1033,14 +1049,14 @@ files = [
 
 [[package]]
 name = "langchain"
-version = "0.0.173"
+version = "0.0.177"
 description = "Building applications with LLMs through composability"
 category = "main"
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "langchain-0.0.173-py3-none-any.whl", hash = "sha256:64cc052f3d8a821d76718bf09d6c7c07a8b57324f867bc50e225d2ac8348567a"},
-    {file = "langchain-0.0.173.tar.gz", hash = "sha256:a2db49c2ce024df7f5a742c9a312ca06a5a8d4982e65090eab58fa58c3ced022"},
+    {file = "langchain-0.0.177-py3-none-any.whl", hash = "sha256:c9dab95210973aba8339a20ebcb3465fd6730628dd4ff9a6e23d6ad1c306d27d"},
+    {file = "langchain-0.0.177.tar.gz", hash = "sha256:3d8b59d31874ca4e014cf6730898acc384394a4da5d68ee8a29ac5b21deadaf8"},
 ]
 
 [package.dependencies]
@@ -1056,16 +1072,17 @@ SQLAlchemy = ">=1.4,<3"
 tenacity = ">=8.1.0,<9.0.0"
 
 [package.extras]
-all = ["O365 (>=2.0.26,<3.0.0)", "aleph-alpha-client (>=2.15.0,<3.0.0)", "anthropic (>=0.2.6,<0.3.0)", "arxiv (>=1.4,<2.0)", "atlassian-python-api (>=3.36.0,<4.0.0)", "azure-cosmos (>=4.4.0b1,<5.0.0)", "azure-identity (>=1.12.0,<2.0.0)", "beautifulsoup4 (>=4,<5)", "clickhouse-connect (>=0.5.14,<0.6.0)", "cohere (>=3,<4)", "deeplake (>=3.3.0,<4.0.0)", "docarray (>=0.31.0,<0.32.0)", "duckduckgo-search (>=2.8.6,<3.0.0)", "elasticsearch (>=8,<9)", "faiss-cpu (>=1,<2)", "google-api-python-client (==2.70.0)", "google-search-results (>=2,<3)", "gptcache (>=0.1.7)", "gql (>=3.4.1,<4.0.0)", "hnswlib (>=0.7.0,<0.8.0)", "html2text (>=2020.1.16,<2021.0.0)", "huggingface_hub (>=0,<1)", "jina (>=3.14,<4.0)", "jinja2 (>=3,<4)", "jq (>=1.4.1,<2.0.0)", "lancedb (>=0.1,<0.2)", "lark (>=1.1.5,<2.0.0)", "manifest-ml (>=0.0.1,<0.0.2)", "networkx (>=2.6.3,<3.0.0)", "nlpcloud (>=1,<2)", "nltk (>=3,<4)", "nomic (>=1.0.43,<2.0.0)", "openai (>=0,<1)", "opensearch-py (>=2.0.0,<3.0.0)", "pdfminer-six (>=20221105,<20221106)", "pexpect (>=4.8.0,<5.0.0)", "pgvector (>=0.1.6,<0.2.0)", "pinecone-client (>=2,<3)", "pinecone-text (>=0.4.2,<0.5.0)", "protobuf (==3.19.6)", "psycopg2-binary (>=2.9.5,<3.0.0)", "pyowm (>=3.3.0,<4.0.0)", "pypdf (>=3.4.0,<4.0.0)", "pytesseract (>=0.3.10,<0.4.0)", "pyvespa (>=0.33.0,<0.34.0)", "qdrant-client (>=1.1.2,<2.0.0)", "redis (>=4,<5)", "sentence-transformers (>=2,<3)", "spacy (>=3,<4)", "steamship (>=2.16.9,<3.0.0)", "tensorflow-text (>=2.11.0,<3.0.0)", "tiktoken (>=0.3.2,<0.4.0)", "torch (>=1,<3)", "transformers (>=4,<5)", "weaviate-client (>=3,<4)", "wikipedia (>=1,<2)", "wolframalpha (==5.0.0)"]
+all = ["O365 (>=2.0.26,<3.0.0)", "aleph-alpha-client (>=2.15.0,<3.0.0)", "anthropic (>=0.2.6,<0.3.0)", "arxiv (>=1.4,<2.0)", "atlassian-python-api (>=3.36.0,<4.0.0)", "azure-cosmos (>=4.4.0b1,<5.0.0)", "azure-identity (>=1.12.0,<2.0.0)", "beautifulsoup4 (>=4,<5)", "clickhouse-connect (>=0.5.14,<0.6.0)", "cohere (>=3,<4)", "deeplake (>=3.3.0,<4.0.0)", "docarray (>=0.31.0,<0.32.0)", "duckduckgo-search (>=2.8.6,<3.0.0)", "elasticsearch (>=8,<9)", "faiss-cpu (>=1,<2)", "google-api-python-client (==2.70.0)", "google-search-results (>=2,<3)", "gptcache (>=0.1.7)", "hnswlib (>=0.7.0,<0.8.0)", "html2text (>=2020.1.16,<2021.0.0)", "huggingface_hub (>=0,<1)", "jina (>=3.14,<4.0)", "jinja2 (>=3,<4)", "jq (>=1.4.1,<2.0.0)", "lancedb (>=0.1,<0.2)", "lark (>=1.1.5,<2.0.0)", "lxml (>=4.9.2,<5.0.0)", "manifest-ml (>=0.0.1,<0.0.2)", "neo4j (>=5.8.1,<6.0.0)", "networkx (>=2.6.3,<3.0.0)", "nlpcloud (>=1,<2)", "nltk (>=3,<4)", "nomic (>=1.0.43,<2.0.0)", "openai (>=0,<1)", "opensearch-py (>=2.0.0,<3.0.0)", "pdfminer-six (>=20221105,<20221106)", "pexpect (>=4.8.0,<5.0.0)", "pgvector (>=0.1.6,<0.2.0)", "pinecone-client (>=2,<3)", "pinecone-text (>=0.4.2,<0.5.0)", "protobuf (==3.19.6)", "psycopg2-binary (>=2.9.5,<3.0.0)", "pyowm (>=3.3.0,<4.0.0)", "pypdf (>=3.4.0,<4.0.0)", "pytesseract (>=0.3.10,<0.4.0)", "pyvespa (>=0.33.0,<0.34.0)", "qdrant-client (>=1.1.2,<2.0.0)", "redis (>=4,<5)", "requests-toolbelt (>=1.0.0,<2.0.0)", "sentence-transformers (>=2,<3)", "spacy (>=3,<4)", "steamship (>=2.16.9,<3.0.0)", "tensorflow-text (>=2.11.0,<3.0.0)", "tiktoken (>=0.3.2,<0.4.0)", "torch (>=1,<3)", "transformers (>=4,<5)", "weaviate-client (>=3,<4)", "wikipedia (>=1,<2)", "wolframalpha (==5.0.0)"]
 azure = ["azure-core (>=1.26.4,<2.0.0)", "azure-cosmos (>=4.4.0b1,<5.0.0)", "azure-identity (>=1.12.0,<2.0.0)", "openai (>=0,<1)"]
 cohere = ["cohere (>=3,<4)"]
 embeddings = ["sentence-transformers (>=2,<3)"]
-extended-testing = ["atlassian-python-api (>=3.36.0,<4.0.0)", "beautifulsoup4 (>=4,<5)", "jq (>=1.4.1,<2.0.0)", "lxml (>=4.9.2,<5.0.0)", "pandas (>=2.0.1,<3.0.0)", "pdfminer-six (>=20221105,<20221106)", "pymupdf (>=1.22.3,<2.0.0)", "pypdf (>=3.4.0,<4.0.0)", "pypdfium2 (>=4.10.0,<5.0.0)", "telethon (>=1.28.5,<2.0.0)", "tqdm (>=4.48.0)", "zep-python (>=0.25,<0.26)"]
+extended-testing = ["atlassian-python-api (>=3.36.0,<4.0.0)", "beautifulsoup4 (>=4,<5)", "chardet (>=5.1.0,<6.0.0)", "gql (>=3.4.1,<4.0.0)", "html2text (>=2020.1.16,<2021.0.0)", "jq (>=1.4.1,<2.0.0)", "lxml (>=4.9.2,<5.0.0)", "pandas (>=2.0.1,<3.0.0)", "pdfminer-six (>=20221105,<20221106)", "psychicapi (>=0.2,<0.3)", "pymupdf (>=1.22.3,<2.0.0)", "pypdf (>=3.4.0,<4.0.0)", "pypdfium2 (>=4.10.0,<5.0.0)", "requests-toolbelt (>=1.0.0,<2.0.0)", "telethon (>=1.28.5,<2.0.0)", "tqdm (>=4.48.0)", "zep-python (>=0.25,<0.26)"]
 hnswlib = ["docarray (>=0.31.0,<0.32.0)", "hnswlib (>=0.7.0,<0.8.0)", "protobuf (==3.19.6)"]
 in-memory-store = ["docarray (>=0.31.0,<0.32.0)"]
 llms = ["anthropic (>=0.2.6,<0.3.0)", "cohere (>=3,<4)", "huggingface_hub (>=0,<1)", "manifest-ml (>=0.0.1,<0.0.2)", "nlpcloud (>=1,<2)", "openai (>=0,<1)", "torch (>=1,<3)", "transformers (>=4,<5)"]
 openai = ["openai (>=0,<1)", "tiktoken (>=0.3.2,<0.4.0)"]
 qdrant = ["qdrant-client (>=1.1.2,<2.0.0)"]
+text-helpers = ["chardet (>=5.1.0,<6.0.0)"]
 
 [[package]]
 name = "lz4"
@@ -2954,4 +2971,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a1e8dfb6a415a4e6bb3757e20147c152e1b52f2c6d6f941d082781b3557ead20"
+content-hash = "150b51e76411a77a8678df1c6e9d7f877ce6f452b1f105d0ab4afdbb2f1ea95e"
