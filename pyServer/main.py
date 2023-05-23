@@ -1,4 +1,4 @@
-from server import create_server
+from server import create_server  # type: ignore
 
 server = create_server()
 
