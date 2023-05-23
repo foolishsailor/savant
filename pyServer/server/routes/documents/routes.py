@@ -1,55 +1,48 @@
 from flask import Blueprint, jsonify, request
 import json
-from werkzeug.utils import secure_filename
 import os
-from server.services.loaders import LoaderResult
-
-from server.services.vector_store import VectorStore
-from .service import get_documents, create_document, delete_document
 from typing import List
 
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
+from server.services.loaders import LoaderResult
+from server.services.vector_store import VectorStore
+
+from .service import DocumentService
 
 documents = Blueprint("documents", __name__)
+
+document_service = DocumentService()
 
 
 @documents.route("/documents", methods=["GET"])
 def get_documents_route():
-    result = get_documents()
-    return jsonify(result)
+    collection_name = request.args.get("collectionName")
+
+    if not collection_name:
+        return jsonify({"error": "collectionName is required"})
+
+    return json.dumps(document_service.get_documents(collection_name))
 
 
 @documents.route("/documents", methods=["POST"])
 def post_documents_route():
-    vector_store = VectorStore()
-    save_temp_folder = "../save_temp_files"
-    results: List[LoaderResult] = []
+    if "collectionName" not in request.form:
+        return jsonify({"error": "collectionName is required"}), 400
 
-    data = request.get_json()
+    collection_name = request.form["collectionName"]
 
-    if "files[]" not in request.files:
-        return "No file part", 400
+    documents: List[FileStorage] = request.files.getlist("documents")
 
-    files = request.files.getlist("files[]")
+    if documents is None:
+        return jsonify({"error": "no files attached"}), 400
 
-    if not files or files[0].filename == "":
-        return "No selected file", 400
-
-    for file in files:
-        if file.filename:
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(save_temp_folder, filename)
-            file.save(file_path)
-
-            results.append(vector_store.add_documents(file_path, filename))
-            os.remove(file_path)
-
-    collection = vector_store.get_collection(data.collection_name)
-    documents = vector_store.get_documents(collection)
-
-    return json.dumps(documents, errors=results.errors)
+    return json.dumps(document_service.add_documents(collection_name, documents))
 
 
-@documents.route("/documents/<id>", methods=["DELETE"])
-def delete_document_route(id):
-    result = delete_document(id)
-    return jsonify(result)
+@documents.route("/documents/<collection_name>", methods=["DELETE"])
+def delete_document_route(collection_name):
+    if not collection_name:
+        return jsonify({"error": "collectionName is required"})
+
+    return json.dumps(document_service.delete_documents(collection_name))

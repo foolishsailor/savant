@@ -57,6 +57,7 @@ export default () => {
       res.setHeader('Transfer-Encoding', 'chunked');
 
       const { question, systemPrompt, queryType, temperature } = req.body;
+
       const stream = new Readable({
         read() {}
       });

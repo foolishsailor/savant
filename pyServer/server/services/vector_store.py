@@ -14,6 +14,7 @@ from langchain.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 from langchain.chains.summarize import load_summarize_chain
+from server.services.loaders import LoaderResult
 
 from server.langchain.callbacks.streaming_callback_handler import (
     StreamingCallbackHandler,
@@ -25,13 +26,13 @@ from server.langchain.callbacks.console_callback_handler import (
 from server.services.loaders import loader
 from server.utils.parse import process_documents_into_objects
 
-from typing import List, Dict, IO
+from typing import List, Dict, Optional
 
 load_dotenv()
 
 
 class VectorStore:
-    store: Chroma = None
+    store: Optional[Chroma] = None
     client = chromadb.Client(
         Settings(
             chroma_api_impl="rest",
@@ -40,8 +41,9 @@ class VectorStore:
         )
     )
     model = ChatOpenAI(
+        client="Test",
         openai_api_key=os.getenv("OPENAI_API_KEY"),
-        model_name=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
+        model=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
         streaming=True,
         verbose=True,
         temperature=0.5,
@@ -52,14 +54,12 @@ class VectorStore:
     def set_create_chroma_store(cls, name: str):
         cls.store = Chroma(
             embedding_function=OpenAIEmbeddings(
-                openai_api_key=os.getenv("OPENAI_API_KEY")
+                client="Test", openai_api_key=os.getenv("OPENAI_API_KEY")
             ),
             collection_name=name,
         )
 
     def list_collections(self):
-        print(f"list collections............ {self.client}")
-
         return self.client.list_collections()
 
     def delete_collection(self, name: str):
@@ -69,22 +69,22 @@ class VectorStore:
         return self.client.get_collection(name)
 
     def create_collection(self, name: str):
-        print(f"create collection----------{name}")
         result = self.client.create_collection(name=name, get_or_create=True)
-
-        print(f"result----------{result}")
-
         return result
 
     def get_documents(self, collection: Collection, query: Dict = {}):
         documents: GetResult = collection.get(where_document=query)
+
+        print("==================documents: ", documents)
         return process_documents_into_objects(documents)
 
-    def add_documents(self, file_path: str, filename: str):
-        (documents, errors) = loader(file_path, filename)
-        if self.store:
-            self.store.add_documents(documents)
-        return (documents, errors)
+    def add_documents(self, file_path: str, filename: str) -> LoaderResult:
+        results = loader(file_path, filename)
+
+        if VectorStore.store:
+            VectorStore.store.add_documents(results.documents)
+
+        return results
 
     def delete_documents(self, collection_name: str, filename: str):
         collection = self.get_collection(collection_name)
@@ -129,12 +129,12 @@ class VectorStore:
             chat_history=self.chat_history,
         )
 
-        if self.store and query_type == "refine":
+        if VectorStore.store and query_type == "refine":
             chain = RetrievalQA(
                 combine_documents_chain=load_summarize_chain(
                     self.model, chain_type="refine"
                 ),
-                retriever=self.store.asRetriever(),
+                retriever=VectorStore.store.asRetriever(),
             )
 
             res = chain.call(

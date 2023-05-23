@@ -9,9 +9,10 @@ import { PromptTemplate } from 'langchain/prompts';
 import { ChromaClient, Collection } from 'chromadb';
 import { processDocumentsIntoObjects } from '@/utils/parse';
 import { Document } from 'langchain/dist/document';
+import { Where, GetResponse, Metadata } from 'chromadb/dist/main/types';
 
 export interface DocumentsObjectInterface {
-  metadata?: Record<string, unknown>;
+  metadata?: Metadata;
   embedding?: Record<string, unknown>;
   document: string;
   id: string;
@@ -62,25 +63,27 @@ export class VectorStore {
   }
 
   async deleteCollection(name: string) {
-    const result = await this.client.deleteCollection(name);
+    const result = await this.client.deleteCollection({ name });
     return result;
   }
 
   async getCollection(name: string) {
-    return await this.client.getCollection(name);
+    return await this.client.getCollection({ name });
   }
 
   async createCollection(name: string) {
-    return await this.client.createCollection(name);
+    return await this.client.createCollection({ name });
   }
 
   async getDocuments(
     collection: Collection,
     query?: object
   ): Promise<Record<string, DocumentsObjectInterface[]>> {
-    const documents = await collection.get(undefined, query);
+    const documents: GetResponse = await collection.get({
+      where: query as Where
+    });
 
-    return documents.error ? {} : processDocumentsIntoObjects(documents);
+    return processDocumentsIntoObjects(documents);
   }
 
   async addDocuments(file: Express.Multer.File) {
@@ -91,13 +94,15 @@ export class VectorStore {
   }
 
   async deleteDocuments(collectionName: string, filename: string) {
-    const collection = await this.client.getCollection(collectionName);
+    const collection = await this.client.getCollection({
+      name: collectionName
+    });
 
-    await collection.delete(undefined, { filename });
+    await collection.delete({ where: { filename } });
 
     const documents = await collection.get();
 
-    return documents.error ? {} : processDocumentsIntoObjects(documents);
+    return processDocumentsIntoObjects(documents);
   }
 
   clearChatHistory() {
@@ -111,6 +116,14 @@ export class VectorStore {
     temperature: number,
     callback: (token: string) => void
   ) {
+    console.log(
+      'askQuestion',
+      question,
+      systemPrompt,
+      queryType,
+      temperature,
+      callback
+    );
     StreamingCallbackHandler.setStreamCallback(callback);
 
     const chatPrompt = PromptTemplate.fromTemplate(

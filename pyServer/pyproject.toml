@@ -6,14 +6,16 @@ authors = ["jc.durbin <jc.durbin@ardanis.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 flask = "^2.3.2"
-chromadb = "^0.3.23"
 
 yachalk = "^0.1.5"
 openai = "^0.27.7"
 langchain = "^0.0.177"
 flask-cors = "^3.0.10"
+tiktoken = "^0.4.0"
+pypdf = "^3.9.0"
+docx2txt = "^0.8"
 
 
 [build-system]

@@ -8,21 +8,39 @@ from langchain.document_loaders import (
     Docx2txtLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from typing import Union, List
+from typing import Union, List, Optional
+
+ALLOWED_EXTENSIONS = {
+    "json",
+    "txt",
+    "pdf",
+    "tsx",
+    "ts",
+    "js",
+    "css",
+    "csv",
+    "docx",
+}
 
 
 class LoaderError:
     error: str
     item: str
 
+    def __init__(self, error: str, item: str):
+        self.error = error
+        self.item = item
+
 
 class LoaderResult:
     documents: List[Document]
     errors: List[LoaderError]
 
-    def __init__(self, documents: List[Document], errors: List[LoaderError]):
+    def __init__(
+        self, documents: List[Document], errors: Optional[List[LoaderError]] = None
+    ):
         self.documents = documents
-        self.errors = errors
+        self.errors = errors if errors is not None else []
 
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
@@ -45,12 +63,13 @@ def get_file_extension(filename: str) -> str:
 
 
 def loader(file_path: str, filename: str) -> LoaderResult:
-    if not filename or file_path:
-        return LoaderResult()
+    if not filename or not file_path:
+        return LoaderResult([], [])
 
     errors: List[LoaderError] = []
 
     extension = get_file_extension(filename)
+
     load_fn = loaders.get(extension)
 
     if not load_fn:
@@ -62,6 +81,8 @@ def loader(file_path: str, filename: str) -> LoaderResult:
             )
         )
 
+        return LoaderResult([], errors)
+
     file_loader = load_fn(file_path)
 
     documents: List[Document] = file_loader.load_and_split(text_splitter)
@@ -69,5 +90,7 @@ def loader(file_path: str, filename: str) -> LoaderResult:
     for doc in documents:
         metadata = doc.metadata
         metadata["filename"] = filename
+
+    print(f"Loaded {len(documents)} documents from {documents}")
 
     return LoaderResult(documents, errors)

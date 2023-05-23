@@ -22,23 +22,29 @@ import {
   DocumentsInterface,
   DocumentsObjectInterface
 } from '@/services/vector-store';
+import { GetResponse } from 'chromadb/dist/main/types';
 
 export const processDocumentsIntoObjects = (
-  documents: DocumentsInterface
+  documents: GetResponse
 ): Record<string, DocumentsObjectInterface[]> => {
   const objects: Record<string, DocumentsObjectInterface[]> = {};
 
   documents.documents.forEach((document, i) => {
-    const metadata = documents.metadatas ? documents.metadatas[i] : undefined;
+    const metadata = documents.metadatas[i] || undefined;
     const embedding = documents.embeddings ? documents.embeddings[i] : {};
     const id = documents.ids[i];
-    const filename = metadata?.filename ?? 'unknown';
-
+    const filename = metadata?.filename as string;
+    const documentString = document as string;
     if (!objects[filename]) {
       objects[filename] = [];
     }
 
-    objects[filename].push({ metadata, embedding, document, id });
+    objects[filename].push({
+      metadata,
+      embedding,
+      document: documentString,
+      id
+    });
   });
 
   return objects;
