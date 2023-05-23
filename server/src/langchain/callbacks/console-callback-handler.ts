@@ -20,12 +20,27 @@ class ConsoleCallbackHandler extends BaseCallbackHandler {
 
   async handleChainEnd(output: ChainValues) {
     console.log(chalk.blue(`==== Finished chain ====`));
-    console.log(chalk.magenta(JSON.stringify(output, null, 2)));
+    console.log(JSON.stringify(output, null, 2));
+  }
+
+  async handleLLMStart(
+    llm: {
+      name: string;
+    },
+    prompts: string[],
+    runId: string,
+    parentRunId?: string | undefined
+  ) {
+    console.log(chalk.blue(`==== LLM end ====`));
+    console.log(`${chalk.green.bold(`llm:`)} ${llm.name}`);
+    console.log(`${chalk.green.bold(`prompts:`)} ${prompts}`);
+    console.log(`${chalk.green.bold(`runId:`)} ${runId}`);
+    console.log(`${chalk.green.bold(`parentRunId:`)} ${parentRunId}`);
   }
 
   async handleLLMEnd(output: LLMResult) {
     console.log(
-      chalk.magenta(`==== LLM end ====`),
+      chalk.blue(`==== LLM end ====`),
       JSON.stringify(output, null, 2)
     );
   }
@@ -45,6 +60,7 @@ class ConsoleCallbackHandler extends BaseCallbackHandler {
   }
 
   async handleText(text: string) {
+    console.log(chalk.blue(`==== Text ====`));
     console.log(text);
   }
 

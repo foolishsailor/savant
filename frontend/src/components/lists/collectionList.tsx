@@ -84,6 +84,10 @@ const CollectionsList = () => {
         const data = await result.json();
 
         dispatch(setCollections(data));
+
+        if (data.length > 0) {
+          dispatch(setSelectedCollection(data[0]));
+        }
       } catch (error) {
         console.error(error);
       }

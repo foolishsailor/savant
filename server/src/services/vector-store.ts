@@ -80,11 +80,11 @@ export class VectorStore {
   }
 
   async addDocuments(file: Express.Multer.File) {
-    const docs = await loader(file);
+    const { documents, errors } = await loader(file);
+    console.log('documents', documents);
+    if (VectorStore.store) await VectorStore.store.addDocuments(documents);
 
-    if (VectorStore.store) await VectorStore.store.addDocuments(docs);
-
-    return docs;
+    return { documents, errors };
   }
 
   async deleteDocuments(collectionName: string, filename: string) {
@@ -162,7 +162,7 @@ export class VectorStore {
             query: prompt,
             temperature
           },
-          [new StreamingCallbackHandler()]
+          [new StreamingCallbackHandler(), new ConsoleCallbackHandler()]
         );
 
         this.chatHistory.push(res.text);

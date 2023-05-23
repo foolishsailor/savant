@@ -6,7 +6,6 @@ import { ChromaClient } from 'chromadb';
 import * as dotenv from 'dotenv';
 
 import documentRoutes from './routes/documents';
-import vectorStoreRoutes from './routes/vectorStore';
 import collectionRoutes from './routes/collections';
 
 dotenv.config();
@@ -21,7 +20,6 @@ dotenv.config();
     .use(bodyParser.json())
     .use(cors())
     .use(documentRoutes({ router }))
-    .use(vectorStoreRoutes({ router }))
     .use(collectionRoutes({ router }))
 
     .listen(port, () => {
