@@ -1,13 +1,50 @@
-collections = [{'name': 'Coll 1'},{'name': 'Coll 2'},{'name': 'Coll 3'}]
+from server.services.vector_store import VectorStore
+from typing import Collection
+from typing import List
 
-def get_collections():
-    return collections
 
-def create_collection(collection):
-    collections.append(collection)
-    return collection
+class CollectionService:
+    vector_store = VectorStore()
 
-def delete_collection(name):
-    global collections
-    collections = [collection for collection in collections if collection['name'] != name]
-    return {'message': f'Collection {name} deleted.'}
+    def __init__(self):
+        self.collections = [{"name": "Coll 1"}, {"name": "Coll 2"}, {"name": "Coll 3"}]
+
+    def get_collection(self, collection_name):
+        collections: List[Collection] = []
+
+        if collection_name:
+            CollectionService.vector_store.set_create_chroma_store(collection_name)
+            collection = CollectionService.vector_store.get_collection(collection_name)
+            collections = [collection] if collection else []
+        else:
+            collections = CollectionService.vector_store.list_collections()
+
+        result = [
+            {"name": collection.name, "metadata": collection.metadata}
+            for collection in collections
+        ]
+        return result
+
+    def create_collection(self, collection_name):
+        CollectionService.vector_store.create_collection(collection_name)
+
+        # Add error trapping here
+
+        collections = CollectionService.vector_store.list_collections()
+
+        result = [
+            {"name": collection.name, "metadata": collection.metadata}
+            for collection in collections
+        ]
+        return result
+
+    def delete_collection(self, collection_name):
+        CollectionService.vector_store.delete_collection(collection_name)
+
+        collections = CollectionService.vector_store.list_collections()
+
+        result = [
+            {"name": collection.name, "metadata": collection.metadata}
+            for collection in collections
+        ]
+        return result
