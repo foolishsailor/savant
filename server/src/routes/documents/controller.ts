@@ -44,7 +44,6 @@ export default () => {
           )
         );
 
-        console.log('results', results.errors);
         const collection = await vectorStore.getCollection(collectionName);
         const documents = await vectorStore.getDocuments(collection);
 

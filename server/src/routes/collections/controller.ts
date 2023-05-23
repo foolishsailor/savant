@@ -29,7 +29,16 @@ export default () => {
       res.json(collections);
     },
 
-    createCollection: async (req: Request, res: Response) => {},
+    createCollection: async (req: Request, res: Response) => {
+      const { collectionName } = req.body;
+
+      if (!collectionName) res.status(400).send('Bad Request');
+
+      await vectorStore.createCollection(collectionName as string);
+      const collections = await vectorStore.listCollections();
+
+      res.json(collections);
+    },
 
     deleteCollection: async (req: Request, res: Response) => {
       const { name } = req.params;

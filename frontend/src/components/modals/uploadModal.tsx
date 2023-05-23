@@ -61,9 +61,6 @@ const UploadModal = ({
       if (response.ok) {
         const { documents, errors } = await response.json();
 
-        console.log('documents', documents);
-        console.log('errors', errors);
-
         onUploadDocuments(documents);
         setFiles([]);
         toast.success('Files uploaded successfully');

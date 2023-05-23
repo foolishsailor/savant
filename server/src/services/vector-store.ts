@@ -70,6 +70,10 @@ export class VectorStore {
     return await this.client.getCollection(name);
   }
 
+  async createCollection(name: string) {
+    return await this.client.createCollection(name);
+  }
+
   async getDocuments(
     collection: Collection,
     query?: object
@@ -81,7 +85,6 @@ export class VectorStore {
 
   async addDocuments(file: Express.Multer.File) {
     const { documents, errors } = await loader(file);
-    console.log('documents', documents);
     if (VectorStore.store) await VectorStore.store.addDocuments(documents);
 
     return { documents, errors };

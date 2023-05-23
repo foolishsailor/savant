@@ -64,10 +64,10 @@ class VectorStore:
         return process_documents_into_objects(documents)
 
     def add_documents(self, file_path: str, filename: str):
-        docs = loader(file_path, filename)
+        (documents, errors) = loader(file_path, filename)
         if self.store:
-            self.store.add_documents(docs)
-        return docs
+            self.store.add_documents(documents)
+        return (documents, errors)
 
     def delete_documents(self, collection_name: str, filename: str):
         collection = self.get_collection(collection_name)

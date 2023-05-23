@@ -36,9 +36,13 @@ const CollectionsList = () => {
 
   const handleAddCollection = async (collectionName: string) => {
     try {
-      const result = await fetch(
-        `http://localhost:4000/collections?collectionName=${collectionName}`
-      );
+      const result = await fetch(`http://localhost:4000/collections`, {
+        method: 'POST',
+        body: JSON.stringify({ collectionName }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
 
       const data = await result.json();
 
@@ -46,7 +50,7 @@ const CollectionsList = () => {
         throw new Error(data.error);
       }
 
-      dispatch(setCollections([...collections, ...data]));
+      dispatch(setCollections([...data]));
 
       const documents = data[0];
 

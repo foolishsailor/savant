@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 import json
 from werkzeug.utils import secure_filename
 import os
+from server.services.loaders import LoaderResult
 
 from server.services.vector_store import VectorStore
 from .service import get_documents, create_document, delete_document
@@ -21,6 +22,7 @@ def get_documents_route():
 def post_documents_route():
     vector_store = VectorStore()
     save_temp_folder = "../save_temp_files"
+    results: List[LoaderResult] = []
 
     data = request.get_json()
 
@@ -34,19 +36,17 @@ def post_documents_route():
 
     for file in files:
         if file.filename:
-            filename = secure_filename(file.filename)  # make sure the filename is safe
+            filename = secure_filename(file.filename)
             file_path = os.path.join(save_temp_folder, filename)
-            file.save(file_path)  # save the file to your desired folder
+            file.save(file_path)
 
-            vector_store.add_documents(
-                file_path, filename
-            )  # pass the file path instead of the file object
-            os.remove(file_path)  # delete the file once it has been added
+            results.append(vector_store.add_documents(file_path, filename))
+            os.remove(file_path)
 
     collection = vector_store.get_collection(data.collection_name)
     documents = vector_store.get_documents(collection)
 
-    return json.dumps(documents)
+    return json.dumps(documents, errors=results.errors)
 
 
 @documents.route("/documents/<id>", methods=["DELETE"])
