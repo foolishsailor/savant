@@ -7,6 +7,7 @@ from chromadb.api.models.Collection import Collection
 from chromadb.api.types import GetResult
 
 from langchain.chat_models import ChatOpenAI
+
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
@@ -42,6 +43,7 @@ class VectorStore:
         client="Test",
         openai_api_key=os.getenv("OPENAI_API_KEY"),
         model=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
+        callbacks=[StreamingCallbackHandler(), ConsoleCallbackHandler()],
         streaming=True,
         verbose=True,
         temperature=0.5,
@@ -80,7 +82,7 @@ class VectorStore:
         results = loader(file_path, filename)
 
         if VectorStore.store:
-            vector_ids = VectorStore.store.add_documents(results.documents)
+            VectorStore.store.add_documents(results.documents)
 
         return results
 
@@ -101,6 +103,7 @@ class VectorStore:
         temperature: int,
         callback,
     ):
+        print(f"==========ask_question {question} {temperature}")
         StreamingCallbackHandler.set_stream_callback(callback)
 
         chat_prompt = PromptTemplate.from_template(
@@ -128,28 +131,31 @@ class VectorStore:
         )
 
         if VectorStore.store and query_type == "refine":
-            chain = RetrievalQA(
+            chain = RetrievalQA.from_llm(
+                llm=self.model,
                 combine_documents_chain=load_summarize_chain(
-                    self.model, chain_type="refine"
+                    llm=self.model,
+                    chain_type="refine",
+                    prompt=prompt,
+                    temperature=temperature,
                 ),
                 retriever=VectorStore.store.as_retriever(),
             )
 
-            res = chain.run(
-                {"chainType": "stuff", "query": prompt, "temperature": temperature},
-                [StreamingCallbackHandler(), ConsoleCallbackHandler()],
-            )
+            res = chain.run()
 
             self.chat_history.append(res)
         else:
             if VectorStore.store:
-                chain = RetrievalQA.from_llm(
-                    llm=self.model, retreiver=VectorStore.store.as_retriever()
+                chain = RetrievalQA.from_chain_type(
+                    llm=self.model,
+                    retriever=VectorStore.store.as_retriever(),
+                    chain_type="stuff",
                 )
 
-                res = chain.run(
-                    {"chainType": "stuff", "query": prompt, "temperature": temperature},
-                    [StreamingCallbackHandler(), ConsoleCallbackHandler()],
-                )
+                # prompt=prompt,
+                # temperature=temperature,
+
+                res = chain.run(prompt)
 
                 self.chat_history.append(res)

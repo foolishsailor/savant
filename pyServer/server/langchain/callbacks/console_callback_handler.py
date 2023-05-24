@@ -7,27 +7,13 @@ from typing import List, Dict, Union, Any
 
 
 class ConsoleCallbackHandler(BaseCallbackHandler):
-    _stream_callback = None
-
-    @staticmethod
-    def stream_callback(function):
-        ConsoleCallbackHandler._stream_callback = staticmethod(function)
-
-    @property
-    def stream_callback(self):
-        return self._stream_callback
-
-    @stream_callback.setter
-    def stream_callback(self, function):
-        ConsoleCallbackHandler.stream_callback(function)
-
     def on_llm_start(
         self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
     ) -> Any:
         print(chalk.blue("========= LLM Start ========="))
         print(chalk.green.bold("Serialized: "), json.dumps(serialized, indent=2))
         print(chalk.green.bold("Prompts: "), json.dumps(prompts, indent=2))
-        print(chalk.green.bold("Other Args: "), json.dumps(**kwargs, indent=2))
+        print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
         print(token)
@@ -48,7 +34,7 @@ class ConsoleCallbackHandler(BaseCallbackHandler):
         print(chalk.blue("========= Chain Start ========="))
         print(chalk.green.bold("Serialized: "), json.dumps(serialized, indent=2))
         print(chalk.green.bold("Inputs: "), json.dumps(inputs, indent=2))
-        print(chalk.green.bold("Other Args: "), json.dumps(**kwargs, indent=2))
+        # print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
 
     def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
         print(chalk.blue("========= Chain End ========="))
@@ -66,12 +52,12 @@ class ConsoleCallbackHandler(BaseCallbackHandler):
         print(chalk.blue("========= Tool Start ========="))
         print(chalk.green.bold("Serialized: "), json.dumps(serialized, indent=2))
         print(chalk.green.bold("Input: "), input_str)
-        print(chalk.green.bold("Other Args: "), json.dumps(**kwargs, indent=2))
+        print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
 
     def on_tool_end(self, output: str, **kwargs: Any) -> Any:
         print(chalk.blue("========= Tool End ========="))
         print(chalk.green.bold("output: "), output)
-        print(chalk.green.bold("Other Args: "), json.dumps(**kwargs, indent=2))
+        print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
 
     def on_tool_error(
         self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
@@ -81,14 +67,14 @@ class ConsoleCallbackHandler(BaseCallbackHandler):
 
     def on_text(self, text: str, **kwargs: Any) -> Any:
         print(chalk.blue("========= On Text ========="))
-        print(chalk.green.bold("Other Args: "), json.dumps(**kwargs, indent=2))
+        print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
 
     def on_agent_action(self, action: AgentAction, **kwargs: Any) -> Any:
         print(chalk.blue("==== Agent Action ===="))
         print(f"{chalk.magenta('  Agent Action RAW:')} {action}")
         print(f"{chalk.green.bold('    Agent Tool:')} {action.tool}")
         print(
-            f"{chalk.green.bold('   Agent Input:')} {json.dumps(action.toolInput, indent=2)}"
+            f"{chalk.green.bold('   Agent Input:')} {json.dumps(action.tool_input, indent=2)}"
         )
         print(f"{chalk.green.bold('     Agent Log:')} {action.log}")
 

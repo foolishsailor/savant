@@ -1,6 +1,6 @@
 import queue
 import threading
-from flask import Blueprint, jsonify, request, Response
+from flask import stream_with_context, Blueprint, jsonify, request, Response
 from server.services.vector_store import VectorStore
 
 from .service import CollectionService
@@ -14,9 +14,9 @@ collection_service = CollectionService()
 
 @collections.route("/collections", methods=["GET"])
 def get_collections_route():
-    collection_name = request.args.get("collectionName")
-
-    return json.dumps(collection_service.get_collection(collection_name))
+    return json.dumps(
+        collection_service.get_collection(str(request.args.get("collectionName")))
+    )
 
 
 @collections.route("/collections", methods=["POST"])
@@ -38,7 +38,7 @@ def delete_collection_route(collection_name):
     return json.dumps(collection_service.delete_collection(collection_name))
 
 
-@collections.route("/question", methods=["POST"])
+@collections.route("/collections/question", methods=["POST"])
 def question_route():
     data = request.get_json()
     question = data.get("question")
@@ -53,10 +53,10 @@ def question_route():
 
     def generate():
         while True:
-            token = q.get()  # This will block until a new item is available.
+            token: str = q.get()  # This will block until a new item is available.
             if token is None:
                 break
-            yield token
+            yield token  # Serialize individual item
 
     threading.Thread(
         target=lambda: vector_store.ask_question(
@@ -64,4 +64,4 @@ def question_route():
         )
     ).start()
 
-    return Response(generate(), mimetype="application/json")
+    return Response(stream_with_context(generate()), mimetype="application/json")
