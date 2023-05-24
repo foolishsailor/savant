@@ -66,19 +66,16 @@ const QueryInput = () => {
     setInputText('');
 
     try {
-      const result = await fetch(
-        'http://localhost:4000/vectorstore/askQuestion',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question: inputText,
-            systemPrompt,
-            queryType: radioValue,
-            temperature: sliderValue
-          })
-        }
-      );
+      const result = await fetch('http://localhost:4000/collections/question', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: inputText,
+          systemPrompt,
+          queryType: radioValue,
+          temperature: sliderValue
+        })
+      });
       // Read the response body as a stream
       const reader = result.body?.getReader();
 

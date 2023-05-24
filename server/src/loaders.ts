@@ -49,28 +49,39 @@ const loaders: DocumentLoaders = {
 
 export const loader = async (
   file: Express.Multer.File
-): Promise<Document[]> => {
-  const blob = getBlobFromFile(file);
+): Promise<{
+  documents: Document[];
+  errors: { error: string; item: string }[];
+}> => {
+  const documents: Document[] = [];
+  const errors: { error: string; item: string }[] = [];
 
+  const blob = getBlobFromFile(file);
   const extension = getFileExtension(file.originalname);
   const loadFn = loaders[extension];
 
   if (!loadFn) {
-    throw new Error(`Unsupported file extension: ${extension}`);
+    errors.push({
+      error: `Unsupported file extension: ${extension}`,
+      item: file.originalname
+    });
+  } else {
+    const fileLoader = await loadFn(blob);
+    const docs: Document[] = await fileLoader.loadAndSplit(textSplitter);
+    const customMetadata = { filename: file.originalname };
+
+    documents.push(
+      ...docs.map((doc: Document) => {
+        return {
+          ...doc,
+          metadata: {
+            ...doc.metadata,
+            ...customMetadata
+          }
+        };
+      })
+    );
   }
 
-  const fileLoader = await loadFn(blob);
-  const docs: Document[] = await fileLoader.loadAndSplit(textSplitter);
-
-  const customMetadata = { filename: file.originalname };
-
-  return docs.map((doc: Document) => {
-    return {
-      ...doc,
-      metadata: {
-        ...doc.metadata,
-        ...customMetadata
-      }
-    };
-  });
+  return { documents, errors };
 };

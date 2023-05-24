@@ -33,14 +33,24 @@ export default () => {
         vectorStore.addDocuments(file)
       );
 
-      await Promise.all(promises).then((results) =>
-        results.reduce((acc, cur) => [...acc, ...cur], [])
-      );
+      try {
+        const results = await Promise.all(promises).then((results) =>
+          results.reduce(
+            (acc, cur) => ({
+              documents: [...acc.documents, ...cur.documents],
+              errors: [...acc.errors, ...cur.errors]
+            }),
+            { documents: [], errors: [] }
+          )
+        );
 
-      const collection = await vectorStore.getCollection(collectionName);
-      const documents = await vectorStore.getDocuments(collection);
+        const collection = await vectorStore.getCollection(collectionName);
+        const documents = await vectorStore.getDocuments(collection);
 
-      res.json(documents);
+        res.json({ documents, errors: results.errors });
+      } catch (error) {
+        res.status(500).send('Internal Server Error');
+      }
     },
 
     deleteDocuments: async (req: Request, res: Response) => {
