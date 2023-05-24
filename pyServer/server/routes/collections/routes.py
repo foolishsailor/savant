@@ -1,6 +1,13 @@
 import queue
 import threading
-from flask import stream_with_context, Blueprint, jsonify, request, Response
+from flask import (
+    stream_with_context,
+    Blueprint,
+    jsonify,
+    request,
+    Response,
+    make_response,
+)
 from server.services.vector_store import VectorStore
 
 from .service import CollectionService
@@ -47,6 +54,10 @@ def question_route():
     temperature = data.get("temperature")
     vector_store = VectorStore()
     q = queue.Queue()
+
+    if not VectorStore.store:
+        error_message = "Collection is not selected"
+        return make_response(jsonify(error_message), 500)
 
     def stream_callback(token):
         q.put(token)

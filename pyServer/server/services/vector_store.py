@@ -10,8 +10,8 @@ from langchain.chat_models import ChatOpenAI
 
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain.prompts import PromptTemplate
-from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
+
 from langchain.chains.summarize import load_summarize_chain
 from server.services.loaders import LoaderResult
 
@@ -21,6 +21,12 @@ from server.langchain.callbacks.streaming_callback_handler import (
 from server.langchain.callbacks.console_callback_handler import (
     ConsoleCallbackHandler,
 )
+
+from langchain.chains import LLMChain
+
+from langchain.chains.question_answering import load_qa_chain
+from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+
 
 from server.services.loaders import loader
 from server.utils.parse import process_documents_into_objects
@@ -39,16 +45,9 @@ class VectorStore:
             chroma_server_http_port="8000",
         )
     )
-    model = ChatOpenAI(
-        client="Test",
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        model=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
-        callbacks=[StreamingCallbackHandler(), ConsoleCallbackHandler()],
-        streaming=True,
-        verbose=True,
-        temperature=0.5,
-    )
-    chat_history: List[str] = []
+
+    chain: ConversationalRetrievalChain
+    chat_history = []
 
     @classmethod
     def set_create_chroma_store(cls, name: str):
@@ -103,59 +102,46 @@ class VectorStore:
         temperature: int,
         callback,
     ):
-        print(f"==========ask_question {question} {temperature}")
+        model = ChatOpenAI(
+            client="Test",
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
+            openai_organization=os.getenv("OPENAI_ORG_ID"),
+            model=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
+            callbacks=[StreamingCallbackHandler(), ConsoleCallbackHandler()],
+            streaming=True,
+            verbose=True,
+            temperature=temperature,
+        )
+
         StreamingCallbackHandler.set_stream_callback(callback)
 
-        chat_prompt = PromptTemplate.from_template(
-            """{system_prompt}
-            You are an AI assistant. You will be asked questions about the given documents, you can only use the given documents for information.  You can use your
-            memory to help with context or analysis of the documents and to understand the information and question, but you cant make things up. 
-            Provide answers in a conversational manner.
-            Dont answer with anything like 'Based on the provided context' or 'Based on Additional Context'
+        if not VectorStore.store:
+            raise ValueError("Collection is not selected")
 
-            Answer like a human would.
-            If you don't know the answer, don't try to make up an answer 
-            Follow the user's instructions carefully. 
-            ALWAYS respond using markdown.
-            
-            Chat History for context:
-            {chat_history}
-
-            The Question to be answered: {question}"""
-        )
-
-        prompt = chat_prompt.format(
-            system_prompt=system_prompt,
-            question=question,
-            chat_history=self.chat_history,
-        )
-
-        if VectorStore.store and query_type == "refine":
-            chain = RetrievalQA.from_llm(
-                llm=self.model,
-                combine_documents_chain=load_summarize_chain(
-                    llm=self.model,
+        if query_type == "refine":
+            chain = ConversationalRetrievalChain(
+                question_generator=LLMChain(llm=model, prompt=CONDENSE_QUESTION_PROMPT),
+                combine_docs_chain=load_summarize_chain(
+                    model,
                     chain_type="refine",
-                    prompt=prompt,
-                    temperature=temperature,
                 ),
                 retriever=VectorStore.store.as_retriever(),
             )
 
-            res = chain.run()
-
-            self.chat_history.append(res)
         else:
-            if VectorStore.store:
-                chain = RetrievalQA.from_chain_type(
-                    llm=self.model,
-                    retriever=VectorStore.store.as_retriever(),
-                    chain_type="stuff",
-                )
+            chain = ConversationalRetrievalChain.from_llm(
+                llm=model,
+                retriever=VectorStore.store.as_retriever(),
+                verbose=True,
+            )
 
-                # prompt=prompt,
-                # temperature=temperature,
+        # prompt=prompt,
+        # temperature=temperature,
 
-                res = chain.run(prompt)
-
-                self.chat_history.append(res)
+        res = chain.run(
+            {
+                "question": question,
+                "chat_history": self.chat_history,
+            }
+        )
+        self.chat_history.append((question, res))

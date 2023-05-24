@@ -76,6 +76,11 @@ const QueryInput = () => {
           temperature: sliderValue
         })
       });
+
+      if (!result.ok) {
+        console.log('result: ', result);
+        throw new Error(`HTTP error, status code: ${result.status}`);
+      }
       // Read the response body as a stream
       const reader = result.body?.getReader();
 
@@ -121,18 +126,18 @@ const QueryInput = () => {
               });
 
             // Continue reading the stream
-            readStream();
+            await readStream();
           } catch (error) {
-            toast.error('Failed to upload files----------');
+            toast.error('Failed query documents');
             return;
           }
         }
       };
 
       // Start reading the stream
-      readStream();
+      await readStream();
     } catch (error) {
-      toast.error('Failed to upload files');
+      toast.error('Failed query documents');
       return;
     }
   };

@@ -13,10 +13,10 @@ class ConsoleCallbackHandler(BaseCallbackHandler):
         print(chalk.blue("========= LLM Start ========="))
         print(chalk.green.bold("Serialized: "), json.dumps(serialized, indent=2))
         print(chalk.green.bold("Prompts: "), json.dumps(prompts, indent=2))
-        print(chalk.green.bold("Other Args: "), json.dumps(kwargs, indent=2))
+        print(chalk.green.bold("Other Args: "), kwargs)
 
-    def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
-        print(token)
+    # def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
+    #     print(token)
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
         print(chalk.blue("========= LLM End ========="))
