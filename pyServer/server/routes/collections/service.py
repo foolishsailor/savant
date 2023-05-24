@@ -11,6 +11,7 @@ class CollectionService:
 
         if collection_name:
             CollectionService.vector_store.set_create_chroma_store(collection_name)
+
             collection = CollectionService.vector_store.get_collection(collection_name)
             collections = [collection] if collection else []
         else:

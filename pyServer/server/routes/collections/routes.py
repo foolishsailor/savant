@@ -45,9 +45,7 @@ def question_route():
     system_prompt = data.get("systemPrompt")
     query_type = data.get("queryType")
     temperature = data.get("temperature")
-
     vector_store = VectorStore()
-
     q = queue.Queue()
 
     def stream_callback(token):

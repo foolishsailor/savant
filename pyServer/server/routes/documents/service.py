@@ -1,4 +1,5 @@
 import os
+from server.utils.parse import ProcessedDocumentReturnObject
 from server.services.loaders import LoaderError
 from server.utils.parse import DocumentsObjectInterface
 from server.services.vector_store import VectorStore
@@ -13,7 +14,7 @@ from typing import List, Dict
 class DocumentReturnObject:
     def __init__(
         self,
-        documents: Dict[str, list[DocumentsObjectInterface]],
+        documents: Dict[str, list[ProcessedDocumentReturnObject]],
         errors: List[LoaderError],
     ):
         self.documents = documents
@@ -29,14 +30,14 @@ class DocumentReturnObject:
 class DocumentService:
     vector_store = VectorStore()
 
-    def get_documents(self, collection_name):
+    def get_documents(
+        self, collection_name
+    ) -> Dict[str, list[ProcessedDocumentReturnObject]]:
         collection: Collection = DocumentService.vector_store.get_collection(
             collection_name
         )
 
-        documents: Dict[
-            str, list[DocumentsObjectInterface]
-        ] = DocumentService.vector_store.get_documents(collection)
+        documents = DocumentService.vector_store.get_documents(collection)
 
         return documents
 
@@ -64,10 +65,8 @@ class DocumentService:
         )
 
         returned_documents: Dict[
-            str, list[DocumentsObjectInterface]
+            str, list[ProcessedDocumentReturnObject]
         ] = DocumentService.vector_store.get_documents(collection)
-
-        print("==============returned_documents", returned_documents)
 
         return DocumentReturnObject(
             documents=returned_documents, errors=errors

@@ -1,27 +1,11 @@
 from chromadb.api.types import (
     Embedding,
     Metadata,
-    Include,
     Metadata,
     Document,
-    Where,
-    IDs,
-    EmbeddingFunction,
     GetResult,
-    QueryResult,
-    ID,
-    OneOrMany,
-    WhereDocument,
-    maybe_cast_one_to_many,
-    validate_ids,
-    validate_include,
-    validate_metadatas,
-    validate_where,
-    validate_where_document,
-    validate_embeddings,
 )
-from typing import Optional, Any, Dict, List
-from mypy_extensions import TypedDict
+from typing import Optional, Dict
 
 
 class DocumentsObjectInterface:
@@ -37,10 +21,25 @@ class DocumentsObjectInterface:
         self.document = document or None
         self.id = id
 
+    def to_dict(self):
+        return {
+            "metadata": self.metadata,
+            "embedding": self.embedding,
+            "document": self.document,
+            "id": self.id,
+        }
+
+
+class ProcessedDocumentReturnObject:
+    id: str
+    document: Optional[Document]
+    metadata: Optional[Metadata]
+    embedding: Optional[Embedding]
+
 
 def process_documents_into_objects(
     documents: GetResult,
-) -> Dict[str, list[DocumentsObjectInterface]]:
+) -> Dict[str, list[ProcessedDocumentReturnObject]]:
     objects = {}
     docs = documents.get("documents", [])
     metadatas = documents.get("metadatas", [])
@@ -55,18 +54,18 @@ def process_documents_into_objects(
         embedding = embeddings[i] if embeddings else None
         doc_id = ids[i]
         filename = (
-            metadata.get("filename")
-            if metadata and hasattr(metadata, "filename")
+            str(metadata.get("filename"))
+            if metadata and "filename" in metadata
             else "unknown"
         )
 
         if filename not in objects:
-            objects[filename] = []
-
-        objects[filename].append(
-            DocumentsObjectInterface(
-                id=doc_id, document=document, metadata=metadata, embedding=embedding
+            objects[str(filename)] = []
+        else:
+            objects[filename].append(
+                DocumentsObjectInterface(
+                    id=doc_id, document=document, metadata=metadata, embedding=embedding
+                ).to_dict()
             )
-        )
 
     return objects

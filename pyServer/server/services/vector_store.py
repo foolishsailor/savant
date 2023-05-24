@@ -5,8 +5,6 @@ import chromadb
 from chromadb.config import Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import GetResult
-from flask import jsonify
-
 
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -52,11 +50,12 @@ class VectorStore:
 
     @classmethod
     def set_create_chroma_store(cls, name: str):
-        cls.store = Chroma(
+        VectorStore.store = Chroma(
             embedding_function=OpenAIEmbeddings(
                 client="Test", openai_api_key=os.getenv("OPENAI_API_KEY")
             ),
             collection_name=name,
+            client=VectorStore.client,
         )
 
     def list_collections(self):
@@ -75,14 +74,13 @@ class VectorStore:
     def get_documents(self, collection: Collection, query: Dict = {}):
         documents: GetResult = collection.get(where_document=query)
 
-        print("==================documents: ", documents)
         return process_documents_into_objects(documents)
 
     def add_documents(self, file_path: str, filename: str) -> LoaderResult:
         results = loader(file_path, filename)
 
         if VectorStore.store:
-            VectorStore.store.add_documents(results.documents)
+            vector_ids = VectorStore.store.add_documents(results.documents)
 
         return results
 
@@ -134,22 +132,24 @@ class VectorStore:
                 combine_documents_chain=load_summarize_chain(
                     self.model, chain_type="refine"
                 ),
-                retriever=VectorStore.store.asRetriever(),
+                retriever=VectorStore.store.as_retriever(),
             )
 
-            res = chain.call(
+            res = chain.run(
                 {"chainType": "stuff", "query": prompt, "temperature": temperature},
                 [StreamingCallbackHandler(), ConsoleCallbackHandler()],
             )
 
-            self.chat_history.append(res.output_text)
+            self.chat_history.append(res)
         else:
             if VectorStore.store:
-                chain = RetrievalQA.fromLLM(self.model, VectorStore.store.asRetriever())
+                chain = RetrievalQA.from_llm(
+                    llm=self.model, retreiver=VectorStore.store.as_retriever()
+                )
 
-                res = chain.call(
+                res = chain.run(
                     {"chainType": "stuff", "query": prompt, "temperature": temperature},
                     [StreamingCallbackHandler(), ConsoleCallbackHandler()],
                 )
 
-                self.chat_history.append(res.text)
+                self.chat_history.append(res)
