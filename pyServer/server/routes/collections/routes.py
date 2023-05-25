@@ -21,8 +21,12 @@ collection_service = CollectionService()
 
 @collections.route("/collections", methods=["GET"])
 def get_collections_route():
+    collection_name = request.args.get("collectionName")
+
     return json.dumps(
-        collection_service.get_collection(str(request.args.get("collectionName")))
+        collection_service.get_collection(str(collection_name))
+        if collection_name is not None
+        else collection_service.get_collection()
     )
 
 

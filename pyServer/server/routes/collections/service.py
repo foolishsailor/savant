@@ -8,7 +8,7 @@ from typing import Sequence
 class CollectionService:
     vector_store = VectorStore()
 
-    def get_collection(self, collection_name: str):
+    def get_collection(self, collection_name: str = ""):
         collections: Sequence[Collection] = []
 
         if collection_name:
