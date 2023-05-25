@@ -5,6 +5,8 @@ import {
   Typography,
   IconButton,
   TextField,
+  FormHelperText,
+  FormControl,
   CircularProgress,
   useTheme
 } from '@mui/material';
@@ -34,6 +36,7 @@ const SingleInputDropDown: React.FC<SingleInputDropDownProps> = ({
   const closeSlider = () => {
     setInputValue('');
     setIsOpen(false);
+    setIsInvalid(false);
   };
 
   const handleSave = () => {
@@ -87,29 +90,26 @@ const SingleInputDropDown: React.FC<SingleInputDropDownProps> = ({
         }}
       >
         <Grid item sx={{ flex: 1 }}>
-          <TextField
-            label="Collection Name"
-            variant="standard"
-            value={inputValue}
-            onChange={handleInputChange}
-            inputProps={{
-              pattern:
-                '^[a-zA-Z0-9](?!.*\\.\\.)[a-zA-Z0-9_-]{1,61}[a-zA-Z0-9]$',
-              title:
-                'Expected collection name that (1) contains 3-63 characters, (2) starts and ends with an alphanumeric character, (3) otherwise contains only alphanumeric characters, underscores or hyphens (-), (4) contains no two consecutive periods (..) and (5) is not a valid IPv4 address'
-            }}
-            helperText={
-              isInvalid && (
-                <Grid>
-                  <Typography sx={{ color: theme.palette.error.dark }}>
-                    Please enter a valid collection name that meets the
-                    requirements
-                  </Typography>
-                </Grid>
-              )
-            }
-            fullWidth
-          />
+          <FormControl sx={{ display: 'flex' }}>
+            <TextField
+              label="Collection Name"
+              variant="standard"
+              value={inputValue}
+              onChange={handleInputChange}
+              inputProps={{
+                pattern:
+                  '^[a-zA-Z0-9](?!.*\\.\\.)[a-zA-Z0-9_-]{1,61}[a-zA-Z0-9]$',
+                title:
+                  'Expected collection name that (1) contains 3-63 characters, (2) starts and ends with an alphanumeric character, (3) otherwise contains only alphanumeric characters, underscores or hyphens (-), (4) contains no two consecutive periods (..) and (5) is not a valid IPv4 address'
+              }}
+              fullWidth
+            />
+            {isInvalid && (
+              <FormHelperText sx={{ color: theme.palette.error.dark }}>
+                Please enter a valid collection name that meets the requirements{' '}
+              </FormHelperText>
+            )}
+          </FormControl>
         </Grid>
         <Grid item>
           <Grid item>

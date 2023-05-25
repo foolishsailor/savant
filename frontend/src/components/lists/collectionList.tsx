@@ -10,21 +10,24 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/system';
 
-import { SidebarItem } from '../containers/container.elements';
+import { SidebarItem } from 'components/containers/container.elements';
 import { toast } from 'react-toastify';
 
-import SingleInputDropDown from '../dropdowns/singleInputDropDown';
+import SingleInputDropDown from 'components/dropdowns/singleInputDropDown';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store';
+import { RootState } from 'store';
 import {
   setDocuments,
   setSelectedCollection,
   setCollections
-} from '../../store/documentsSlice';
+} from 'store/documentsSlice';
+
+import useCollectionService from 'services/apiService/useCollectionService';
 
 const CollectionsList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const { addCollection } = useCollectionService();
 
   const selectedCollection = useSelector(
     (state: RootState) => state.documents.selectedCollection
@@ -36,21 +39,11 @@ const CollectionsList = () => {
 
   const handleAddCollection = async (collectionName: string) => {
     try {
-      const result = await fetch(`http://localhost:4000/collections`, {
-        method: 'POST',
-        body: JSON.stringify({ collectionName }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await addCollection(collectionName);
 
-      const data = await result.json();
+      console.log(data);
 
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      dispatch(setCollections([...data]));
+      dispatch(setCollections(data));
 
       const documents = data[0];
 

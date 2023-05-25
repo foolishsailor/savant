@@ -6,8 +6,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "react-app",
-    "prettier"
+    "react-app"
   ],
   "overrides": [],
   "parser": "@typescript-eslint/parser",
@@ -25,5 +24,10 @@
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "linebreak-style": ["warn", "windows"]
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }

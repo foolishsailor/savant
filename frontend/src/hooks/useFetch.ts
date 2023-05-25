@@ -9,12 +9,15 @@ export type RequestWithBodyModel = RequestModel & {
 };
 
 export const useFetch = () => {
+  const BASE_URL = process.env.REACT_APP_API_BASE_URL;
   const handleFetch = async (
     url: string,
     request: any,
     signal?: AbortSignal
   ) => {
-    const requestUrl = request?.params ? `${url}${request.params}` : url;
+    const requestUrl = request?.params
+      ? `${BASE_URL}${url}${request.params}`
+      : `${BASE_URL}${url}`;
 
     const requestBody = request?.body
       ? request.body instanceof FormData
@@ -39,10 +42,13 @@ export const useFetch = () => {
 
         const headers = response.headers;
 
+        console.log('contentType', contentType);
+
         const result =
           contentType &&
           (contentType?.indexOf('application/json') !== -1 ||
-            contentType?.indexOf('text/plain') !== -1)
+            contentType?.indexOf('text/plain') !== -1 ||
+            contentType?.indexOf('text/html') !== -1)
             ? response.json()
             : contentDisposition?.indexOf('attachment') !== -1
             ? response.blob()
