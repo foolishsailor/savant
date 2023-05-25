@@ -65,7 +65,7 @@ const UploadModal = ({
         setFiles([]);
         toast.success('Files uploaded successfully');
 
-        if (errors) {
+        if (errors && errors.length > 0) {
           toast.warning(
             `Failed to upload some files:${JSON.stringify(errors, null, 2)}`
           );

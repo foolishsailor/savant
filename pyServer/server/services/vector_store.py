@@ -10,9 +10,11 @@ from langchain.chat_models import ChatOpenAI
 
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain.chains import ConversationalRetrievalChain
 
+from langchain.chains import ConversationalRetrievalChain, LLMChain
 from langchain.chains.summarize import load_summarize_chain
+from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
+
 from server.services.loaders import LoaderResult
 
 from server.langchain.callbacks.streaming_callback_handler import (
@@ -21,11 +23,6 @@ from server.langchain.callbacks.streaming_callback_handler import (
 from server.langchain.callbacks.console_callback_handler import (
     ConsoleCallbackHandler,
 )
-
-from langchain.chains import LLMChain
-
-from langchain.chains.question_answering import load_qa_chain
-from langchain.chains.conversational_retrieval.prompts import CONDENSE_QUESTION_PROMPT
 
 
 from server.services.loaders import loader
@@ -134,9 +131,6 @@ class VectorStore:
                 retriever=VectorStore.store.as_retriever(),
                 verbose=True,
             )
-
-        # prompt=prompt,
-        # temperature=temperature,
 
         res = chain.run(
             {

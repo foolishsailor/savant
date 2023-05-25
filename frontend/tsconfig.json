@@ -1,21 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "module": "esnext",
+    "target": "es2019",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["@types/node", "@types/express", "@types/multer"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
+    "baseUrl": "src",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
+    "forceConsistentCasingInFileNames": false,
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "sourceMap": true,
+    "isolatedModules": true,
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": ["src"]
 }
