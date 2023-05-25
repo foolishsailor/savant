@@ -43,6 +43,7 @@ def post_collections_route():
 
 @collections.route("/collections/<collection_name>", methods=["DELETE"])
 def delete_collection_route(collection_name):
+    print("DELETE collection_name: ", collection_name)
     if not collection_name:
         return jsonify({"error": "collectionName is required"})
 

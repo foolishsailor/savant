@@ -40,9 +40,13 @@ def post_documents_route():
     return json.dumps(document_service.add_documents(collection_name, documents))
 
 
-@documents.route("/documents/<collection_name>", methods=["DELETE"])
-def delete_document_route(collection_name):
-    if not collection_name:
-        return jsonify({"error": "collectionName is required"})
+@documents.route("/documents/delete", methods=["POST"])
+def delete_document_route():
+    data = request.get_json()
+    collection_name = data.get("collectionName")
+    file_name = data.get("fileName")
 
-    return json.dumps(document_service.delete_documents(collection_name))
+    if not collection_name or not file_name:
+        return jsonify({"error": "collectionName and fileName is required"}), 400
+
+    return json.dumps(document_service.delete_documents(collection_name, file_name))

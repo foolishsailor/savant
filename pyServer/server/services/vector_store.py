@@ -74,8 +74,13 @@ class VectorStore:
 
         return process_documents_into_objects(documents)
 
-    def add_documents(self, file_path: str, filename: str) -> LoaderResult:
+    def add_documents(
+        self, collection_name: str, file_path: str, filename: str
+    ) -> LoaderResult:
         results = loader(file_path, filename)
+
+        if not VectorStore.store:
+            VectorStore.set_create_chroma_store(collection_name)
 
         if VectorStore.store:
             VectorStore.store.add_documents(results.documents)
@@ -84,8 +89,14 @@ class VectorStore:
 
     def delete_documents(self, collection_name: str, filename: str):
         collection = self.get_collection(collection_name)
-        collection.delete(where={filename: filename})
+
+        print(f"Deleting {filename} from {collection_name}")
+        print(f"Collection: {collection}")
+
+        collection.delete(where={"filename": filename})
+
         documents: GetResult = collection.get()
+
         return process_documents_into_objects(documents)
 
     def clear_chat_history(self):

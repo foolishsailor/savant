@@ -1,0 +1,89 @@
+Full Stack Developer Job Description
+Ardanis Technologies Limited are looking for a skilled Full Stack Developer (.NET and Angular) to
+join our team with an immediate start. This role is ideal for someone who is highly motivated to
+work with our team who produce high-quality solutions for our customers. You will be a key
+player in our team helping with design, development and guiding other team members. The ideal
+candidate should be passionate about software development craftsmanship and be interested in
+emerging technology and approaches. A hands-on approach with an eye on best practice and
+processes are required for the role.
+
+Full Stack Developer Requirements
+ -5+ Years of .NET backend development experience
+ -2+ Years Angular frontend development experience
+ -Strong practical knowledge of JavaScript, Typescript, HTML & CSS skills
+ -Strong practical knowledge of C#(or similar)
+ -Experience working with IIS or other hosting models
+ -Experience unit testing (Jest, Mocha, NUnit, Moq etc)
+ -Experience building user interfaces with Angular
+ -Experience building RESTful APIs
+ -Experience working with ASP.NET Core MVC
+ -CSS pre-processing such as SASS, SCSS or LESS
+ -Experience working with Git and related contribution workflows (feature branches, pull requests etc.)
+ -Excellent communication and problem-solving skills
+ -Excellent knowledge of Relational Databases, SQL and ORM technologies (Entity Framework, Dapper
+etc.)
+ -Experience with test-driven development and behavioural driven development.
+ -Experience using SpecFlow(optional)
+ -Experience with Agile Development and SCRUM
+ -Experience with DevOps practices such as CI/CD, Continuous Testing and Infrastructure as Code
+ -English Speaking
+
+Full Stack Developer Job Description
+Ardanis Technologies Limited are looking for a skilled Full Stack Developer (.NET and Angular) to
+join our team with an immediate start. This role is ideal for someone who is highly motivated to
+work with our team who produce high-quality solutions for our customers. You will be a key
+player in our team helping with design, development and guiding other team members. The ideal
+candidate should be passionate about software development craftsmanship and be interested in
+emerging technology and approaches. A hands-on approach with an eye on best practice and
+processes are required for the role.
+
+Full Stack Developer Requirements
+ -5+ Years of .NET backend development experience
+ -2+ Years Angular frontend development experience
+ -Strong practical knowledge of JavaScript, Typescript, HTML & CSS skills
+ -Strong practical knowledge of C#(or similar)
+ -Experience working with IIS or other hosting models
+ -Experience unit testing (Jest, Mocha, NUnit, Moq etc)
+ -Experience building user interfaces with Angular
+ -Experience building RESTful APIs
+ -Experience working with ASP.NET Core MVC
+ -CSS pre-processing such as SASS, SCSS or LESS
+ -Experience working with Git and related contribution workflows (feature branches, pull requests etc.)
+ -Excellent communication and problem-solving skills
+ -Excellent knowledge of Relational Databases, SQL and ORM technologies (Entity Framework, Dapper
+etc.)
+ -Experience with test-driven development and behavioural driven development.
+ -Experience using SpecFlow(optional)
+ -Experience with Agile Development and SCRUM
+ -Experience with DevOps practices such as CI/CD, Continuous Testing and Infrastructure as Code
+ -English Speaking
+
+Full Stack Developer Job Description
+Ardanis Technologies Limited are looking for a skilled Full Stack Developer (.NET and Angular) to
+join our team with an immediate start. This role is ideal for someone who is highly motivated to
+work with our team who produce high-quality solutions for our customers. You will be a key
+player in our team helping with design, development and guiding other team members. The ideal
+candidate should be passionate about software development craftsmanship and be interested in
+emerging technology and approaches. A hands-on approach with an eye on best practice and
+processes are required for the role.
+
+Full Stack Developer Requirements
+ -5+ Years of .NET backend development experience
+ -2+ Years Angular frontend development experience
+ -Strong practical knowledge of JavaScript, Typescript, HTML & CSS skills
+ -Strong practical knowledge of C#(or similar)
+ -Experience working with IIS or other hosting models
+ -Experience unit testing (Jest, Mocha, NUnit, Moq etc)
+ -Experience building user interfaces with Angular
+ -Experience building RESTful APIs
+ -Experience working with ASP.NET Core MVC
+ -CSS pre-processing such as SASS, SCSS or LESS
+ -Experience working with Git and related contribution workflows (feature branches, pull requests etc.)
+ -Excellent communication and problem-solving skills
+ -Excellent knowledge of Relational Databases, SQL and ORM technologies (Entity Framework, Dapper
+etc.)
+ -Experience with test-driven development and behavioural driven development.
+ -Experience using SpecFlow(optional)
+ -Experience with Agile Development and SCRUM
+ -Experience with DevOps practices such as CI/CD, Continuous Testing and Infrastructure as Code
+ -English Speaking

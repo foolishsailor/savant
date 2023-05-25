@@ -40,14 +40,8 @@ const CollectionsList = () => {
   const handleAddCollection = async (collectionName: string) => {
     try {
       const data = await addCollection(collectionName);
-
-      console.log(data);
-
       dispatch(setCollections(data));
-
-      const documents = data[0];
-
-      dispatch(setSelectedCollection(documents));
+      dispatch(setSelectedCollection(data[0]));
     } catch (error) {
       console.error(error);
       toast.error('Failed to add collection: ' + error);
@@ -75,6 +69,7 @@ const CollectionsList = () => {
   };
 
   useEffect(() => {
+    console.log('get bloody collections');
     const getCollections = async () => {
       try {
         const result = await fetch('http://localhost:4000/collections');
@@ -95,9 +90,6 @@ const CollectionsList = () => {
   useEffect(() => {
     const setCollection = async () => {
       try {
-        await fetch(
-          `http://localhost:4000/collections?collectionName=${selectedCollection?.name}`
-        );
         const result = await fetch(
           `http://localhost:4000/documents?collectionName=${selectedCollection?.name}`
         );

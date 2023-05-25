@@ -28,8 +28,6 @@ class CollectionService:
     def create_collection(self, collection_name: str):
         CollectionService.vector_store.create_collection(collection_name)
 
-        # Add error trapping here
-
         collections = CollectionService.vector_store.list_collections()
 
         result = [
@@ -39,9 +37,14 @@ class CollectionService:
         return result
 
     def delete_collection(self, collection_name: str):
+        print("delete start", collection_name)
         CollectionService.vector_store.delete_collection(collection_name)
 
+        print("delete complete", collection_name)
+
         collections = CollectionService.vector_store.list_collections()
+
+        print("collections ============", collections)
 
         result = [
             {"name": collection.name, "metadata": collection.metadata}

@@ -53,7 +53,9 @@ class DocumentService:
                 file.save(file_path)
 
                 results.append(
-                    DocumentService.vector_store.add_documents(file_path, filename)
+                    DocumentService.vector_store.add_documents(
+                        collection_name, file_path, filename
+                    )
                 )
                 os.remove(file_path)
 
@@ -72,13 +74,5 @@ class DocumentService:
             documents=returned_documents, errors=errors
         ).to_dict()
 
-    def delete_documents(self, collection_name):
-        DocumentService.vector_store.delete_collection(collection_name)
-
-        collections = DocumentService.vector_store.list_collections()
-
-        result = [
-            {"name": collection.name, "metadata": collection.metadata}
-            for collection in collections
-        ]
-        return result
+    def delete_documents(self, collection_name: str, filename: str):
+        return DocumentService.vector_store.delete_documents(collection_name, filename)
