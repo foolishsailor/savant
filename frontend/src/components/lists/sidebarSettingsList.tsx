@@ -12,8 +12,6 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { SidebarItem } from '../containers/container.elements';
 
-export interface SettingContainerProps {}
-
 export const SidebarSettingsList = () => {
   const onSettingsClick = () => {};
   const onClearDocumentsClick = () => {};

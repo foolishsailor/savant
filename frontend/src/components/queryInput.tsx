@@ -105,7 +105,7 @@ const QueryInput = () => {
 
                 const lastElementIndex = prev.length - 1;
 
-                let updatedAssistantMessage: Message = {
+                const updatedAssistantMessage: Message = {
                   source: 'assistant',
                   content: [...prev[lastElementIndex].content]
                 };

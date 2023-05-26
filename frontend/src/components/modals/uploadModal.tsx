@@ -31,11 +31,17 @@ const UploadModal = ({
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
 
   const { addDocuments } = useDocumentService();
 
   const onDrop = (acceptedFiles: File[]) => {
-    setFiles([...files, ...acceptedFiles]);
+    const newFiles = acceptedFiles.map((file) => file);
+    setFiles([...files, ...newFiles]);
+    setUploadProgress([
+      ...uploadProgress,
+      ...new Array(newFiles.length).fill(0)
+    ]);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -50,8 +56,9 @@ const UploadModal = ({
       formData.append('documents', file);
     });
 
-    if (selectedCollection?.name)
+    if (selectedCollection?.name) {
       formData.append('collectionName', selectedCollection.name);
+    }
 
     try {
       setIsLoading(false);
@@ -60,6 +67,7 @@ const UploadModal = ({
 
       onUploadDocuments(documents);
       setFiles([]);
+      setUploadProgress([]);
       toast.success('Files uploaded successfully');
 
       if (errors && errors.length > 0) {
@@ -97,7 +105,7 @@ const UploadModal = ({
         }}
       >
         <Typography variant="h6">Upload Files</Typography>
-        <UploadList files={files} />
+        <UploadList files={files} uploadProgress={uploadProgress} />
         <Grid
           {...getRootProps()}
           sx={{
