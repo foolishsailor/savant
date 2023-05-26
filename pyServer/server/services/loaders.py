@@ -73,6 +73,7 @@ def loader(file_path: str, filename: str) -> LoaderResult:
     load_fn = loaders.get(extension)
 
     if not load_fn:
+        print(f"==========================Unsupported file extension: {extension}")
         errors.append(
             (
                 LoaderError(
@@ -91,6 +92,6 @@ def loader(file_path: str, filename: str) -> LoaderResult:
         metadata = doc.metadata
         metadata["filename"] = filename
 
-    print(f"Loaded {len(documents)} documents from {documents}")
+    print(f"=====================Loaded {len(documents)} documents from {documents}")
 
     return LoaderResult(documents, errors)

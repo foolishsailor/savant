@@ -20,12 +20,6 @@ class DocumentReturnObject:
         self.documents = documents
         self.errors = errors
 
-    def to_dict(self):
-        return {
-            "documents": self.documents,
-            "errors": self.errors,
-        }
-
 
 class DocumentService:
     vector_store = VectorStore()
@@ -70,9 +64,7 @@ class DocumentService:
             str, list[ProcessedDocumentReturnObject]
         ] = DocumentService.vector_store.get_documents(collection)
 
-        return DocumentReturnObject(
-            documents=returned_documents, errors=errors
-        ).to_dict()
+        return DocumentReturnObject(documents=returned_documents, errors=errors)
 
     def delete_documents(self, collection_name: str, filename: str):
         return DocumentService.vector_store.delete_documents(collection_name, filename)

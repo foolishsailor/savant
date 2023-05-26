@@ -37,7 +37,10 @@ def post_documents_route():
     if documents is None:
         return jsonify({"error": "no files attached"}), 400
 
-    return json.dumps(document_service.add_documents(collection_name, documents))
+    return json.dumps(
+        document_service.add_documents(collection_name, documents),
+        default=lambda o: o.__dict__,
+    )
 
 
 @documents.route("/documents/delete", methods=["POST"])

@@ -23,11 +23,15 @@ import {
 } from 'store/documentsSlice';
 
 import useCollectionService from 'services/apiService/useCollectionService';
+import useDocumentService from 'services/apiService/useDocumentService';
 
 const CollectionsList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
-  const { addCollection } = useCollectionService();
+  const { addCollection, deleteCollection, getCollections } =
+    useCollectionService();
+
+  const { getDocuments } = useDocumentService();
 
   const selectedCollection = useSelector(
     (state: RootState) => state.documents.selectedCollection
@@ -37,76 +41,51 @@ const CollectionsList = () => {
     (state: RootState) => state.documents.collections
   );
 
-  const handleAddCollection = async (collectionName: string) => {
-    try {
-      const data = await addCollection(collectionName);
-      dispatch(setCollections(data));
-      dispatch(setSelectedCollection(data[0]));
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to add collection: ' + error);
-    }
+  const handleAddCollection = (collectionName: string) => {
+    addCollection(collectionName)
+      .then((data) => {
+        dispatch(setCollections(data));
+      })
+      .catch((error) => {
+        toast.error('Failed to add collection: ' + error);
+      });
   };
 
-  const deleteCollection = async (index: number) => {
-    try {
-      const collection = collections[index];
-      const result = await fetch(
-        `http://localhost:4000/collections/${collection.name}`,
-        { method: 'DELETE' }
-      );
-      const data = await result.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      dispatch(setCollections(data));
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to delete documents: ' + error);
-    }
+  const handleDeleteCollection = (index: number) => {
+    const collection = collections[index];
+    deleteCollection(collection.name)
+      .then((data) => {
+        dispatch(setCollections(data));
+      })
+      .catch((error) => {
+        toast.error('Failed to delete documents: ' + error);
+      });
   };
 
   useEffect(() => {
-    console.log('get bloody collections');
-    const getCollections = async () => {
+    (async () => {
       try {
-        const result = await fetch('http://localhost:4000/collections');
-        const data = await result.json();
-
+        const data = await getCollections();
         dispatch(setCollections(data));
 
         if (data.length > 0) {
           dispatch(setSelectedCollection(data[0]));
         }
       } catch (error) {
-        console.error(error);
+        toast.error('Failed to get collections: ' + error);
       }
-    };
-    getCollections();
+    })();
   }, []);
 
   useEffect(() => {
-    const setCollection = async () => {
-      try {
-        const result = await fetch(
-          `http://localhost:4000/documents?collectionName=${selectedCollection?.name}`
-        );
-        const data = await result.json();
-
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        dispatch(setDocuments(data));
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to get documents: ' + error);
-      }
-    };
-
-    if (selectedCollection?.name) setCollection();
+    if (selectedCollection?.name)
+      getDocuments(selectedCollection.name)
+        .then((data) => {
+          dispatch(setDocuments(data));
+        })
+        .catch((error) => {
+          toast.error('Failed to get documents: ' + error);
+        });
   }, [selectedCollection]);
 
   return (
@@ -133,7 +112,7 @@ const CollectionsList = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => deleteCollection(index)}
+                onClick={() => handleDeleteCollection(index)}
               >
                 <Grid sx={{ ml: 1 }}>
                   <DeleteIcon />

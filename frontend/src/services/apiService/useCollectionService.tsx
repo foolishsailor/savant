@@ -21,18 +21,30 @@ const useCollectionService = () => {
 
   const deleteCollection = useCallback(
     (collectionName: string, signal?: AbortSignal) => {
-      return fetchService.post<CollectionList[]>(`/collections`, {
-        body: { collectionName },
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        signal
-      });
+      return fetchService.delete<CollectionList[]>(
+        `/collections/${collectionName}`,
+        {
+          signal
+        }
+      );
+    },
+    [fetchService]
+  );
+
+  const getCollections = useCallback(
+    (collectionName?: string, signal?: AbortSignal) => {
+      return fetchService.get<CollectionList[]>(
+        `/collections${collectionName ? '/' + collectionName : ''}`,
+        {
+          signal
+        }
+      );
     },
     [fetchService]
   );
 
   return {
+    getCollections,
     addCollection,
     deleteCollection
   };
