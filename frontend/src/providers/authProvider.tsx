@@ -85,6 +85,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return unsubscribe;
   }, [auth]);
 
+  useEffect(() => {
+    if (user) {
+      console.log(user);
+    }
+  }, [user]);
+
   return (
     <AuthContext.Provider value={providerValue}>
       {user ? (

@@ -47,7 +47,7 @@ const SingleInputDropDown: React.FC<SingleInputDropDownProps> = ({
   };
 
   function handleInputChange(event: { target: { value: any } }) {
-    const value = event.target.value;
+    const { value } = event.target;
     const isValid =
       /^[a-zA-Z0-9](?!.*\\.\\.)[a-zA-Z0-9_-]{1,61}[a-zA-Z0-9]$/.test(value);
 
@@ -64,7 +64,7 @@ const SingleInputDropDown: React.FC<SingleInputDropDownProps> = ({
         justifyContent="space-between"
         sx={{
           borderBottom: `solid 1px ${theme.palette.grey[700]}`,
-          backgroundColor: theme.palette.grey[900],
+          backgroundColor: theme.palette.background.paper,
           zIndex: 2,
           pb: 1
         }}

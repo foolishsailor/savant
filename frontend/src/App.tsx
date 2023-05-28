@@ -21,6 +21,7 @@ import { initializeApp } from 'firebase/app';
 
 import { AuthProvider } from 'providers/authProvider';
 import { firebaseConfig } from 'services/authService';
+import ConversationSideBar from 'components/conversationSideBar';
 
 const darkTheme = createTheme({
   palette: {
@@ -48,16 +49,14 @@ const App: React.FC = () => {
       <CssBaseline />
       <Provider store={store}>
         <AuthProvider>
-          <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
-            <DocumentLightBox />
-            <PageContainer>
-              <AppBarComponent />
-              <ContentContainer>
-                <Conversation />
-                <DocumentSideBar />
-              </ContentContainer>
-            </PageContainer>
-          </Container>
+          <DocumentLightBox />
+          <PageContainer>
+            <ContentContainer>
+              <ConversationSideBar />
+              <Conversation />
+              <DocumentSideBar />
+            </ContentContainer>
+          </PageContainer>
         </AuthProvider>
       </Provider>
     </ThemeProvider>

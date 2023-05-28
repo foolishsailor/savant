@@ -156,3 +156,4 @@ dist
 
 # python
 **/__pycache__/
+*.venv

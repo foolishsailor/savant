@@ -9,8 +9,13 @@ const slice = createSlice({
   reducers
 });
 
-export const { setSystemPrompt, setConversation, addToConversation } =
-  slice.actions;
+export const {
+  setSystemPrompt,
+  setConversation,
+  addToConversation,
+  setTemperature,
+  setDocumentRetrievalType
+} = slice.actions;
 
 const conversationSlice = slice.reducer;
 

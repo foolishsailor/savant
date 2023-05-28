@@ -21,5 +21,14 @@ export const reducers = {
     action: PayloadAction<Message[]>
   ) => {
     state.conversation = [...state.conversation, ...action.payload];
+  },
+  setTemperature: (state: ConversationState, action: PayloadAction<number>) => {
+    state.temperature = action.payload;
+  },
+  setDocumentRetrievalType: (
+    state: ConversationState,
+    action: PayloadAction<'simple' | 'refine'>
+  ) => {
+    state.documentRetrievalType = action.payload;
   }
 };

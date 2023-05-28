@@ -13,9 +13,10 @@ import {
 import { Message } from '../types/message';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from 'store';
 import { useDispatch } from 'react-redux';
-import { setConversation as setConversationState } from '../store/conversationSlice';
+import { setConversation as setConversationState } from 'store/conversationSlice';
+import SettingsSlider from './sliders/settingSlider';
 
 const QueryInput = () => {
   const dispatch = useDispatch();
@@ -23,9 +24,15 @@ const QueryInput = () => {
   const systemPrompt = useSelector(
     (state: RootState) => state.conversation.systemPrompt
   );
+  const temperature = useSelector(
+    (state: RootState) => state.conversation.temperature
+  );
+  const documentRetrievalType = useSelector(
+    (state: RootState) => state.conversation.documentRetrievalType
+  );
+
   const [inputText, setInputText] = useState('');
-  const [sliderValue, setSliderValue] = useState(0.5);
-  const [radioValue, setRadioValue] = useState('simple');
+
   const { REACT_APP_CHAIN_END_TRIGGER_MESSAGE } = process.env;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,20 +43,9 @@ const QueryInput = () => {
     dispatch(setConversationState(conversation));
   }, [conversation]);
 
-  const handleSliderChange = (
-    event: Event,
-    value: number | number[],
-    activeThumb: number
-  ) => {
-    setSliderValue(value as number);
-  };
-
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRadioValue(event.target.value);
-  };
-
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault(); // prevent newline from being entered
       queryDocuments();
     }
   };
@@ -72,8 +68,8 @@ const QueryInput = () => {
         body: JSON.stringify({
           question: inputText,
           systemPrompt,
-          queryType: radioValue,
-          temperature: sliderValue
+          queryType: documentRetrievalType,
+          temperature
         })
       });
 
@@ -152,56 +148,27 @@ const QueryInput = () => {
         flex: 1,
         flexDirection: 'column',
         flexWrap: 'nowrap',
-        height: 150
+        position: 'relative',
+        maxHeight: 120
       }}
     >
       <Grid
-        item
-        container
-        gap={2}
-        alignItems="center"
-        justifyContent="space-between"
+        sx={{
+          flex: 1,
+          bottom: 10,
+          pl: 8,
+          pr: 8,
+          pb: 2
+        }}
       >
-        <Grid item sx={{ width: 500, pl: 4, pr: 4 }}>
-          <Slider
-            value={sliderValue}
-            onChange={handleSliderChange}
-            defaultValue={0.5}
-            min={0}
-            step={0.1}
-            max={1}
-            valueLabelDisplay="auto"
-            marks={[
-              { value: 0, label: 'precise' },
-              { value: 0.5, label: 'neutral' },
-              { value: 1, label: 'creative' }
-            ]}
-          />
-        </Grid>
-        <Grid item>
-          <RadioGroup row defaultValue="simple" onChange={handleRadioChange}>
-            <FormControlLabel
-              value="simple"
-              control={<Radio />}
-              label="Simple"
-            />
-            <FormControlLabel
-              value="refine"
-              control={<Radio />}
-              label="Refine"
-            />
-          </RadioGroup>
-        </Grid>
-      </Grid>
-      <Grid sx={{ flex: 1 }}>
         <TextField
-          fullWidth
           label="Query Documents"
           value={inputText}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           multiline
-          rows={3}
+          maxRows={4}
+          fullWidth
           InputProps={{
             style: {
               color: '#EEE',
@@ -209,9 +176,13 @@ const QueryInput = () => {
               alignItems: 'flex-start'
             }
           }}
-          sx={{ label: { color: '#888' } }}
+          sx={{
+            label: { color: '#888' },
+            resize: 'vertical'
+          }}
         />
       </Grid>
+      <SettingsSlider />
     </Grid>
   );
 };
