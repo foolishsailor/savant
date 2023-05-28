@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@azure/cosmos": "^3.17.3",
     "@emotion/react": "^11.10.8",
     "@emotion/styled": "^11.10.8",
     "@mui/icons-material": "^5.11.16",
@@ -14,6 +15,7 @@
     "eslint": "^8.41.0",
     "eslint-plugin-prettier": "^4.2.1",
     "file-icon": "^5.1.1",
+    "firebase": "^9.22.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
