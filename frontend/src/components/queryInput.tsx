@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'store';
 import { useDispatch } from 'react-redux';
 import { setConversation as setConversationState } from 'store/conversationSlice';
-import SettingsSlider from './sliders/settingSlider';
+import ConversationSettingsDrawer from './drawers/conversationSettingDrawer';
 
 const QueryInput = () => {
   const dispatch = useDispatch();

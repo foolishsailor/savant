@@ -2,6 +2,7 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { ConversationState } from './state';
 
 import { Message } from '../../types/message';
+import { OpenAiModels } from 'types/models';
 
 export const reducers = {
   setSystemPrompt: (
@@ -30,5 +31,8 @@ export const reducers = {
     action: PayloadAction<'simple' | 'refine'>
   ) => {
     state.documentRetrievalType = action.payload;
+  },
+  setModel: (state: ConversationState, action: PayloadAction<OpenAiModels>) => {
+    state.model = action.payload;
   }
 };

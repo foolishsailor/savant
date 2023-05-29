@@ -69,7 +69,7 @@ class CollectionService:
         system_prompt = data.get("systemPrompt")
         query_type = data.get("queryType")
         temperature = data.get("temperature")
-
+        collection_name = data.get("collectionName")
         q = queue.Queue()
 
         def stream_callback(token):
@@ -84,7 +84,12 @@ class CollectionService:
 
         thread = ThreadWithException(
             target=lambda: CollectionService.vector_store.ask_question(
-                question, system_prompt, query_type, temperature, stream_callback
+                question,
+                system_prompt,
+                query_type,
+                temperature,
+                collection_name,
+                stream_callback,
             )
         )
         thread.start()

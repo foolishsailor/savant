@@ -14,7 +14,8 @@ export const {
   setConversation,
   addToConversation,
   setTemperature,
-  setDocumentRetrievalType
+  setDocumentRetrievalType,
+  setModel
 } = slice.actions;
 
 const conversationSlice = slice.reducer;
