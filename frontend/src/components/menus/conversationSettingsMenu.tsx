@@ -30,6 +30,7 @@ import DocumentQueryRadio from 'components/radio/documentQueryRadio';
 
 const ConversationSettingsMenu = () => {
   const dispatch = useDispatch();
+
   const documentRetrievalType = useSelector(
     (state: RootState) => state.conversation.documentRetrievalType
   );
@@ -57,7 +58,6 @@ const ConversationSettingsMenu = () => {
     const models = await getModels();
     setModels(models);
     toggleSettings('model');
-    console.log(models);
   };
 
   const handleModelSelection = (event: any) => {

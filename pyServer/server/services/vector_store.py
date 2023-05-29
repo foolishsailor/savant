@@ -81,8 +81,7 @@ class VectorStore:
 
         print(f"Adding {results} to {results}")
 
-        if not VectorStore.store:
-            VectorStore.set_create_chroma_store(collection_name)
+        VectorStore.set_create_chroma_store(collection_name)
 
         if VectorStore.store and len(results.documents) > 0:
             VectorStore.store.add_documents(results.documents)

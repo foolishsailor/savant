@@ -70,7 +70,6 @@ const QueryInput = () => {
       });
 
       if (!result.ok) {
-        console.log('result: ', result);
         throw new Error(`HTTP error, status code: ${result.status}`);
       }
       // Read the response body as a stream

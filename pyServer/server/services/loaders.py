@@ -92,6 +92,4 @@ def loader(file_path: str, filename: str) -> LoaderResult:
         metadata = doc.metadata
         metadata["filename"] = filename
 
-    print(f"=====================Loaded {len(documents)} documents from {documents}")
-
     return LoaderResult(documents, errors)

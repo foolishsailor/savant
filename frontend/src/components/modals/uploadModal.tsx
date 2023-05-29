@@ -56,9 +56,9 @@ const UploadModal = ({
       formData.append('documents', file);
     });
 
-    if (selectedCollection?.name) {
-      formData.append('collectionName', selectedCollection.name);
-    }
+    if (!selectedCollection?.name) return toast.error('No colection selected');
+
+    formData.append('collectionName', selectedCollection.name);
 
     try {
       setIsLoading(false);

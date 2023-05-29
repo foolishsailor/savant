@@ -9,6 +9,11 @@ export interface AddDocumentsReturnType {
   errors: DocumentLoaderErrors[];
 }
 
+export interface DeleteDocumentType {
+  collectionName: string;
+  fileName: string;
+}
+
 const useDocumentService = () => {
   const fetchService = useFetch();
 
@@ -22,14 +27,12 @@ const useDocumentService = () => {
     [fetchService]
   );
 
-  const deleteCollection = useCallback(
-    (collectionName: string, signal?: AbortSignal) => {
-      return fetchService.delete<CollectionList[]>(
-        `/collections/${collectionName}`,
-        {
-          signal
-        }
-      );
+  const deleteDocument = useCallback(
+    (body: DeleteDocumentType, signal?: AbortSignal) => {
+      return fetchService.post<DocumentsObject>(`/documents/delete`, {
+        body,
+        signal
+      });
     },
     [fetchService]
   );
@@ -59,7 +62,7 @@ const useDocumentService = () => {
     addDocuments,
     getDocuments,
     getAllDocuments,
-    deleteCollection
+    deleteDocument
   };
 };
 

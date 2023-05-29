@@ -8,7 +8,6 @@ interface UploadListProps {
 }
 
 const UploadList = ({ files, uploadProgress }: UploadListProps) => {
-  console.log('uploadProgress', uploadProgress);
   return (
     <Grid
       sx={{

@@ -12,20 +12,24 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import UploadModal from '../modals/uploadModal';
 import FileIcon from '../fileIcon';
 import { SidebarItem } from '../containers/container.elements';
-import { DocumentsObject } from '../../types/documents';
+import { DocumentsObject } from 'types/documents';
 import AddItemHeader from '../headers/addItemHeader';
 import { toast } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import { RootState } from 'store';
+import useDocumentService from 'services/apiService/useDocumentService';
 import {
   setDocuments,
   setSelectedDocument,
   setDocumentLightBoxIsOpen
-} from '../../store/documentsSlice';
+} from 'store/documentsSlice';
 
 const DocumentsList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+
+  const { deleteDocument } = useDocumentService();
+
   const selectedCollection = useSelector(
     (state: RootState) => state.documents.selectedCollection
   );
@@ -54,21 +58,16 @@ const DocumentsList = () => {
     toast.error('Please select a collection');
   };
 
-  const deleteDocument = async (document: string) => {
+  const deleteDocumentHandler = async (document: string) => {
     if (!selectedCollection) {
       throw new Error('Please select a collection');
     }
 
     try {
-      const result = await fetch(`http://localhost:4000/documents/delete`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          collectionName: selectedCollection.name,
-          fileName: document
-        })
+      const data = await deleteDocument({
+        collectionName: selectedCollection.name,
+        fileName: document
       });
-      const data = await result.json();
 
       if (data) dispatch(setDocuments(data));
     } catch (error) {
@@ -106,7 +105,7 @@ const DocumentsList = () => {
                 <IconButton
                   edge="end"
                   aria-label="delete"
-                  onClick={() => deleteDocument(document)}
+                  onClick={() => deleteDocumentHandler(document)}
                 >
                   <Grid sx={{ ml: 1 }}>
                     <DeleteIcon />
