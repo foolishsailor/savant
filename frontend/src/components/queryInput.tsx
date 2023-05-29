@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Grid } from '@mui/material';
+import { TextField, Grid, useTheme, Button } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import StopIcon from '@mui/icons-material/Stop';
 
 import { Message } from '../types/message';
 import { toast } from 'react-toastify';
@@ -7,11 +9,13 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'store';
 import { useDispatch } from 'react-redux';
 import { setConversation as setConversationState } from 'store/conversationSlice';
-import ConversationSettingsDrawer from './drawers/conversationSettingDrawer';
 
 const QueryInput = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
+  const [isStreaming, setIsStreaming] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
+  const model = useSelector((state: RootState) => state.conversation.model);
   const systemPrompt = useSelector(
     (state: RootState) => state.conversation.systemPrompt
   );
@@ -56,6 +60,8 @@ const QueryInput = () => {
     ]);
     setInputText('');
 
+    setIsStreaming(true);
+
     try {
       const result = await fetch('http://localhost:4000/collections/question', {
         method: 'POST',
@@ -65,11 +71,13 @@ const QueryInput = () => {
           systemPrompt,
           queryType: documentRetrievalType,
           temperature,
-          collectionName: selectedCollection.name
+          collectionName: selectedCollection.name,
+          model
         })
       });
 
       if (!result.ok) {
+        setIsStreaming(false);
         throw new Error(`HTTP error, status code: ${result.status}`);
       }
       // Read the response body as a stream
@@ -82,6 +90,8 @@ const QueryInput = () => {
             const { done, value } = await reader.read();
 
             if (done) {
+              console.log('done----------');
+              setIsStreaming(false);
               return;
             }
 
@@ -119,6 +129,7 @@ const QueryInput = () => {
             // Continue reading the stream
             await readStream();
           } catch (error) {
+            setIsStreaming(false);
             toast.error('Failed query documents');
             return;
           }
@@ -128,6 +139,7 @@ const QueryInput = () => {
       // Start reading the stream
       await readStream();
     } catch (error) {
+      setIsStreaming(false);
       toast.error('Failed query documents');
       return;
     }
@@ -139,21 +151,38 @@ const QueryInput = () => {
       container
       rowGap={1}
       sx={{
-        pt: 2,
-        flex: 1,
+        p: 2,
         flexDirection: 'column',
         flexWrap: 'nowrap',
         position: 'relative',
-        maxHeight: 120
+        justifyContent: 'flex-end',
+        height: 140
       }}
     >
+      {(conversation.length > 0 || isStreaming) && (
+        <Grid container sx={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Button
+            variant="outlined"
+            startIcon={isStreaming ? <StopIcon /> : <RefreshIcon />}
+            sx={{
+              borderColor: theme.palette.grey[700],
+              color: theme.palette.grey[400],
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: theme.palette.grey[800],
+                borderColor: theme.palette.grey[700],
+                color: theme.palette.grey[400]
+              }
+            }}
+          >
+            {isStreaming ? 'Stop generating' : 'Regenerate response'}
+          </Button>
+        </Grid>
+      )}
       <Grid
         sx={{
-          flex: 1,
-          bottom: 10,
           pl: 8,
-          pr: 8,
-          pb: 2
+          pr: 8
         }}
       >
         <TextField
@@ -166,13 +195,13 @@ const QueryInput = () => {
           fullWidth
           InputProps={{
             style: {
-              color: '#EEE',
+              color: theme.palette.grey[100],
               height: '100%',
               alignItems: 'flex-start'
             }
           }}
           sx={{
-            label: { color: '#888' },
+            label: { color: theme.palette.grey[500] },
             resize: 'vertical'
           }}
         />

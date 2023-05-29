@@ -56,47 +56,8 @@ class CollectionService:
 
         collections = CollectionService.vector_store.list_collections()
 
-        print("collections ============", collections)
-
         result = [
             {"name": collection.name, "metadata": collection.metadata}
             for collection in collections
         ]
         return result
-
-    def query_collection(self, data):
-        question = data.get("question")
-        system_prompt = data.get("systemPrompt")
-        query_type = data.get("queryType")
-        temperature = data.get("temperature")
-        collection_name = data.get("collectionName")
-        q = queue.Queue()
-
-        def stream_callback(token):
-            q.put(token)
-
-        def generate():
-            while True:
-                token = q.get()  # This will block until a new item is available.
-                if token is None:
-                    break
-                yield token
-
-        thread = ThreadWithException(
-            target=lambda: CollectionService.vector_store.ask_question(
-                question,
-                system_prompt,
-                query_type,
-                temperature,
-                collection_name,
-                stream_callback,
-            )
-        )
-        thread.start()
-
-        thread.join()  # Wait for the thread to finish
-        if thread.error is not None:
-            # Handle the error as needed
-            print(f"An error occurred: {thread.error}")
-
-        return generate

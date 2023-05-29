@@ -81,6 +81,12 @@ const ConversationList = () => {
           </Grid>
         );
       })}
+      <Grid
+        sx={{
+          backgroundColor: theme.palette.grey[900],
+          minHeight: 80
+        }}
+      />
     </Grid>
   );
 };

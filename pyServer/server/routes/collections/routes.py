@@ -54,6 +54,7 @@ def delete_collection_route(collection_name):
 def question_route():
     data = request.get_json()
     question = data.get("question")
+    model_name = data.get("model")
     system_prompt = data.get("systemPrompt")
     query_type = data.get("queryType")
     temperature = data.get("temperature")
@@ -74,6 +75,7 @@ def question_route():
     threading.Thread(
         target=lambda: vector_store.ask_question(
             question,
+            model_name,
             system_prompt,
             query_type,
             temperature,

@@ -106,6 +106,7 @@ class VectorStore:
     def ask_question(
         self,
         question: str,
+        model_name: str,
         system_prompt: str,
         query_type: str,
         temperature: int,
@@ -119,10 +120,9 @@ class VectorStore:
         model_args = {
             "client": "Test",
             "openai_api_key": openai_api_key,
-            "model": default_model,
+            "model": model_name if model_name else default_model,
             "callbacks": [StreamingCallbackHandler(), ConsoleCallbackHandler()],
             "streaming": True,
-            "verbose": True,
             "temperature": temperature,
         }
 
