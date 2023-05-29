@@ -20,7 +20,7 @@ import { RootState } from 'store';
 
 type RadioValue = 'simple' | 'refine';
 
-const SettingsSlider: React.FC = () => {
+const SettingsSlider = ({ isOpen }: { isOpen: boolean }) => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const temperature = useSelector(
@@ -29,7 +29,6 @@ const SettingsSlider: React.FC = () => {
   const documentRetrievalType = useSelector(
     (state: RootState) => state.conversation.documentRetrievalType
   );
-  const [isOpen, setIsOpen] = useState(false);
 
   const handleSliderChange = (event: Event, newValue: number | number[]) => {
     dispatch(setTemperature(newValue as number));
@@ -43,46 +42,22 @@ const SettingsSlider: React.FC = () => {
     dispatch(setSystemPrompt(prompt));
   };
 
-  const toggleTab = () => {
-    setIsOpen(!isOpen);
-  };
-
   return (
     <>
       <Grid
         container
         sx={{
-          bottom: isOpen ? 0 : -200,
+          bottom: isOpen ? 60 : -200,
           position: 'absolute',
-          height: 230,
           transition: 'all 200ms ease-in-out',
           zIndex: 1
         }}
       >
-        <Grid container item sx={{ justifyContent: 'center' }}>
-          <Grid
-            item
-            sx={{
-              justifyContent: 'center',
-              backgroundColor: theme.palette.grey[800],
-              pr: 2,
-              pl: 2,
-              borderTopLeftRadius: 5,
-              borderTopRightRadius: 5,
-              height: 30
-            }}
-          >
-            <IconButton onClick={toggleTab} sx={{ p: 0.5 }}>
-              {isOpen ? <ExpandMore /> : <Settings />}
-            </IconButton>
-          </Grid>
-        </Grid>
-
         <Grid
           container
           item
           sx={{
-            backgroundColor: theme.palette.grey[800],
+            backgroundColor: theme.palette.grey[700],
             height: 200,
             p: 2,
             borderTopLeftRadius: 5,

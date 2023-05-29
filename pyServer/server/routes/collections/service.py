@@ -5,6 +5,18 @@ from chromadb.api.models.Collection import Collection
 from typing import Sequence
 
 
+class ThreadWithException(threading.Thread):
+    def __init__(self, target, *args, **kwargs):
+        super().__init__(target=target, *args, **kwargs)
+        self.error = None
+
+    def run(self):
+        try:
+            super().run()
+        except Exception as e:
+            self.error = e
+
+
 class CollectionService:
     vector_store = VectorStore()
 
@@ -70,10 +82,16 @@ class CollectionService:
                     break
                 yield token
 
-        threading.Thread(
+        thread = ThreadWithException(
             target=lambda: CollectionService.vector_store.ask_question(
                 question, system_prompt, query_type, temperature, stream_callback
             )
-        ).start()
+        )
+        thread.start()
+
+        thread.join()  # Wait for the thread to finish
+        if thread.error is not None:
+            # Handle the error as needed
+            print(f"An error occurred: {thread.error}")
 
         return generate

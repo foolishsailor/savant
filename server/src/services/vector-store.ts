@@ -41,8 +41,8 @@ export class VectorStore {
         streaming: true,
         verbose: true,
         temperature: 0.5
-      },
-      { organization: process.env.OPENAI_ORG_ID }
+      }
+      // { organization: process.env.OPENAI_ORG_ID }
     );
 
     this.chatHistory = [];

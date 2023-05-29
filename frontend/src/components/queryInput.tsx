@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Slider,
-  TextField,
-  Button,
-  Grid
-} from '@mui/material';
+import { TextField, Grid } from '@mui/material';
 
 import { Message } from '../types/message';
 import { toast } from 'react-toastify';
@@ -29,6 +20,10 @@ const QueryInput = () => {
   );
   const documentRetrievalType = useSelector(
     (state: RootState) => state.conversation.documentRetrievalType
+  );
+
+  const selectedCollection = useSelector(
+    (state: RootState) => state.documents.selectedCollection
   );
 
   const [inputText, setInputText] = useState('');
@@ -69,7 +64,8 @@ const QueryInput = () => {
           question: inputText,
           systemPrompt,
           queryType: documentRetrievalType,
-          temperature
+          temperature,
+          collectionName: selectedCollection.name
         })
       });
 
@@ -182,7 +178,6 @@ const QueryInput = () => {
           }}
         />
       </Grid>
-      <SettingsSlider />
     </Grid>
   );
 };

@@ -110,45 +110,62 @@ class VectorStore:
         system_prompt: str,
         query_type: str,
         temperature: int,
+        collection_name: str,
         callback,
     ):
-        model = ChatOpenAI(
-            client="Test",
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            openai_organization=os.getenv("OPENAI_ORG_ID"),
-            model=os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo",
-            callbacks=[StreamingCallbackHandler(), ConsoleCallbackHandler()],
-            streaming=True,
-            verbose=True,
-            temperature=temperature,
-        )
+        openai_org_id = os.getenv("OPENAI_ORG_ID")
+        openai_api_key = os.getenv("OPENAI_API_KEY")
+        default_model = os.getenv("DEFAULT_OPENAI_MODEL") or "gpt-3.5-turbo"
+
+        model_args = {
+            "client": "Test",
+            "openai_api_key": openai_api_key,
+            "model": default_model,
+            "callbacks": [StreamingCallbackHandler(), ConsoleCallbackHandler()],
+            "streaming": True,
+            "verbose": True,
+            "temperature": temperature,
+        }
+
+        if openai_org_id:
+            model_args["openai_organization"] = openai_org_id
+
+        model = ChatOpenAI(**model_args)
 
         StreamingCallbackHandler.set_stream_callback(callback)
 
         if not VectorStore.store:
-            raise ValueError("Collection is not selected")
+            VectorStore.set_create_chroma_store(collection_name)
 
-        if query_type == "refine":
-            chain = ConversationalRetrievalChain(
-                question_generator=LLMChain(llm=model, prompt=CONDENSE_QUESTION_PROMPT),
-                combine_docs_chain=load_summarize_chain(
-                    model,
-                    chain_type="refine",
-                ),
-                retriever=VectorStore.store.as_retriever(),
+        if VectorStore.store:
+            if query_type == "refine":
+                chain = ConversationalRetrievalChain(
+                    question_generator=LLMChain(
+                        llm=model, prompt=CONDENSE_QUESTION_PROMPT
+                    ),
+                    combine_docs_chain=load_summarize_chain(
+                        model,
+                        chain_type="refine",
+                    ),
+                    retriever=VectorStore.store.as_retriever(),
+                )
+
+            else:
+                chain = ConversationalRetrievalChain.from_llm(
+                    llm=model,
+                    retriever=VectorStore.store.as_retriever(),
+                    verbose=True,
+                )
+
+            res = chain.run(
+                {
+                    "question": question,
+                    "chat_history": self.chat_history,
+                }
             )
+            self.chat_history.append((question, res))
 
         else:
-            chain = ConversationalRetrievalChain.from_llm(
-                llm=model,
-                retriever=VectorStore.store.as_retriever(),
-                verbose=True,
+            raise ValueError(
+                "Collection is not selected",
             )
-
-        res = chain.run(
-            {
-                "question": question,
-                "chat_history": self.chat_history,
-            }
-        )
-        self.chat_history.append((question, res))

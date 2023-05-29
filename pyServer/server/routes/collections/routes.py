@@ -57,12 +57,9 @@ def question_route():
     system_prompt = data.get("systemPrompt")
     query_type = data.get("queryType")
     temperature = data.get("temperature")
+    collection_name = data.get("collectionName")
     vector_store = VectorStore()
     q = queue.Queue()
-
-    if not VectorStore.store:
-        error_message = "Collection is not selected"
-        return make_response(jsonify(error_message), 500)
 
     def stream_callback(token):
         q.put(token)
@@ -76,7 +73,12 @@ def question_route():
 
     threading.Thread(
         target=lambda: vector_store.ask_question(
-            question, system_prompt, query_type, temperature, stream_callback
+            question,
+            system_prompt,
+            query_type,
+            temperature,
+            collection_name,
+            stream_callback,
         )
     ).start()
 
