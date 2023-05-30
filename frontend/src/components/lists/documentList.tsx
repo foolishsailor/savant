@@ -76,13 +76,17 @@ const DocumentsList = () => {
   };
 
   return (
-    <SidebarItem>
+    <SidebarItem sx={{ flex: 2 }}>
       <AddItemHeader
         title="Documents"
         handleAddCollection={() => setOpen(true)}
       />
       <List
-        sx={{ flex: 1, overflow: 'auto', maxHeight: `calc(100vh - 500px)` }}
+        sx={{
+          flex: 1,
+          overflow: 'auto',
+          maxHeight: `calc(100vh - 500px)`
+        }}
       >
         {documents &&
           Object.keys(documents).map((document: string, index: number) => (
@@ -94,13 +98,19 @@ const DocumentsList = () => {
                 backgroundColor:
                   selectedDocumentListItem === document
                     ? theme.palette.action.selected
-                    : 'transparent'
+                    : 'transparent',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
               }}
             >
               <Grid sx={{ mr: 1 }}>
                 <FileIcon fileName={document} />
               </Grid>
-              <ListItemText primary={document} />
+              <ListItemText
+                primary={document}
+                sx={{ textOverflow: 'ellipsis', overflow: 'hidden' }}
+              />
+
               <ListItemSecondaryAction>
                 <IconButton
                   edge="end"

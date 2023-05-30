@@ -1,7 +1,8 @@
 import os
 from dotenv import load_dotenv
 from langchain.callbacks.base import BaseCallbackHandler
-from typing import Dict, Any
+from langchain.schema import LLMResult
+from typing import Dict, Any, List
 
 load_dotenv()
 
@@ -24,6 +25,12 @@ class StreamingCallbackHandler(BaseCallbackHandler):
     def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
         if self.stream_callback:
             self.stream_callback(token)
+
+    def on_llm_start(
+        self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
+    ) -> Any:
+        if self.stream_callback:
+            self.stream_callback(os.getenv("LLM_START_TRIGGER_MESSAGE"))
 
     def on_chain_end(self, outputs: Dict[str, Any], **kwargs: Any) -> Any:
         if self.stream_callback:

@@ -1,3 +1,4 @@
+import os
 import queue
 import threading
 from flask import (
@@ -7,7 +8,9 @@ from flask import (
     request,
     Response,
     make_response,
+    g,
 )
+
 from server.services.vector_store import VectorStore
 
 from .service import CollectionService
@@ -61,19 +64,22 @@ def question_route():
     collection_name = data.get("collectionName")
     vector_store = VectorStore()
     q = queue.Queue()
+    stop_thread = threading.Event()
 
     def stream_callback(token):
         q.put(token)
 
     def generate():
         while True:
-            token: str = q.get()  # This will block until a new item is available.
+            token: str = q.get()
             if token is None:
                 break
-            yield token  # Serialize individual item
+            yield token
+            if request.environ.get("werkzeug.server.shutdown"):
+                stop_thread.set()
 
-    threading.Thread(
-        target=lambda: vector_store.ask_question(
+    def query_and_signal_end():
+        vector_store.ask_question(
             question,
             model_name,
             system_prompt,
@@ -82,6 +88,9 @@ def question_route():
             collection_name,
             stream_callback,
         )
-    ).start()
+        q.put(os.getenv("CHAT_END_TRIGGER_MESSAGE"))
+
+    thread = threading.Thread(target=query_and_signal_end)
+    thread.start()
 
     return Response(stream_with_context(generate()), mimetype="application/json")

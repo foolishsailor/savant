@@ -16,7 +16,7 @@ export const SidebarContainer = styled(Grid)(({ theme }) => ({
   flexDirection: 'column',
   flex: 1,
   flexWrap: 'nowrap',
-  minWidth: 200,
+  minWidth: 250,
   backgroundColor: theme.palette.background.paper,
   justifyContent: 'center',
   '& > :not(:last-child)': {
@@ -44,7 +44,7 @@ export const ContentContainer = styled(Grid)(({ theme }) => ({
 export const ConversationContainer = styled(Grid)(({ theme }) => ({
   backgroundColor: theme.palette.grey[900],
   flex: 5,
-  maxHeight: 'calc(100vh - 120px)',
+  maxHeight: 'calc(100vh - 180px)',
   display: 'flex'
 }));
 

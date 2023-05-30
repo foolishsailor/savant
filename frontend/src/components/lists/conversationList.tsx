@@ -84,7 +84,7 @@ const ConversationList = () => {
       <Grid
         sx={{
           backgroundColor: theme.palette.grey[900],
-          minHeight: 80
+          minHeight: 40
         }}
       />
     </Grid>

@@ -5,6 +5,7 @@ import chromadb
 from chromadb.config import Settings
 from chromadb.api.models.Collection import Collection
 from chromadb.api.types import GetResult
+from langchain import PromptTemplate
 
 from langchain.chat_models import ChatOpenAI
 
@@ -124,6 +125,7 @@ class VectorStore:
             "callbacks": [StreamingCallbackHandler(), ConsoleCallbackHandler()],
             "streaming": True,
             "temperature": temperature,
+            "verbose": True,
         }
 
         if openai_org_id:
