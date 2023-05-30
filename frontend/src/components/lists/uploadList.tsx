@@ -1,12 +1,13 @@
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, LinearProgress } from '@mui/material';
 
 import FileIcon from '../fileIcon';
 
 interface UploadListProps {
   files: File[];
+  uploadProgress: number[];
 }
 
-const UploadList = ({ files }: UploadListProps) => {
+const UploadList = ({ files, uploadProgress }: UploadListProps) => {
   return (
     <Grid
       sx={{
@@ -16,7 +17,7 @@ const UploadList = ({ files }: UploadListProps) => {
         flexWrap: 'nowrap'
       }}
     >
-      {files.map((file) => (
+      {files.map((file, index) => (
         <Grid
           sx={{
             display: 'flex',
@@ -36,6 +37,7 @@ const UploadList = ({ files }: UploadListProps) => {
             <FileIcon fileName={file.name} />
           </Grid>
           <Typography variant="body1">{file.name}</Typography>
+          <LinearProgress variant="determinate" value={uploadProgress[index]} />
         </Grid>
       ))}
     </Grid>

@@ -16,8 +16,8 @@ export const SidebarContainer = styled(Grid)(({ theme }) => ({
   flexDirection: 'column',
   flex: 1,
   flexWrap: 'nowrap',
-  minWidth: 200,
-  backgroundColor: theme.palette.grey[900],
+  minWidth: 250,
+  backgroundColor: theme.palette.background.paper,
   justifyContent: 'center',
   '& > :not(:last-child)': {
     borderBottom: `solid 1px ${theme.palette.grey[700]}`
@@ -38,24 +38,22 @@ export const ContentContainer = styled(Grid)(({ theme }) => ({
   display: 'flex',
   justifyContent: 'center',
   flexDirection: 'row',
-  flexWrap: 'nowrap',
-  columnGap: theme.spacing(1)
+  flexWrap: 'nowrap'
 }));
 
 export const ConversationContainer = styled(Grid)(({ theme }) => ({
   backgroundColor: theme.palette.grey[900],
   flex: 5,
-  maxHeight: 'calc(100vh - 360px)',
+  maxHeight: 'calc(100vh - 180px)',
   display: 'flex'
 }));
 
 export const ModalContentContainer = styled(Grid)(({ theme }) => ({
   backgroundColor: theme.palette.grey[800],
   flex: 1,
-  overFlow: 'auto',
+
   display: 'flex',
-  height: 'calc(100vh - 160px)',
-  padding: theme.spacing(1)
+  height: 'calc(100vh - 160px)'
 }));
 
 export const QueryContainer = styled(Grid)(({ theme }) => ({
@@ -66,5 +64,6 @@ export const QueryContainer = styled(Grid)(({ theme }) => ({
   flexWrap: 'nowrap',
   minWidth: 200,
   justifyContent: 'center',
-  backgroundColor: theme.palette.grey[900]
+  backgroundColor: theme.palette.grey[900],
+  overflow: 'hidden'
 }));

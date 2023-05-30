@@ -8,4 +8,9 @@ export interface Document {
   metadata?: Metadata;
 }
 
+export interface DocumentLoaderErrors {
+  error: string;
+  item: string;
+}
+
 export type DocumentsObject = Record<string, Document[]>;

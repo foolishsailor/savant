@@ -3,7 +3,6 @@ import { CollectionList } from '../../types/collection';
 
 export interface DocumentState {
   documentLightBoxIsOpen: boolean;
-  documentLightBoxOnClose: () => void;
   selectedDocument: string | undefined;
   selectedCollection: CollectionList;
   collections: CollectionList[];
@@ -12,7 +11,6 @@ export interface DocumentState {
 
 export const initialState: DocumentState = {
   documentLightBoxIsOpen: false,
-  documentLightBoxOnClose: () => {},
   selectedDocument: undefined,
   selectedCollection: {
     name: '',

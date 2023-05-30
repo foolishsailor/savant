@@ -80,10 +80,10 @@ const FileIconComponent: React.FC<FileIconProps> = ({ fileName }) => {
   return (
     <div
       style={{
-        maxWidth: '25px',
-        maxHeight: '25px',
-        minWidth: '25px',
-        minHeight: '25px'
+        maxWidth: '20px',
+        maxHeight: '20px',
+        minWidth: '20px',
+        minHeight: '20px'
       }}
     >
       <FileIcon fold={false} extension={fileExtension} {...fileIconStyles} />

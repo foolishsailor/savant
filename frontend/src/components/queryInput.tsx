@@ -1,32 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Slider,
-  TextField,
-  Button,
-  Grid
-} from '@mui/material';
+import { TextField, Grid, useTheme, Button } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import StopIcon from '@mui/icons-material/Stop';
 
 import { Message } from '../types/message';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { RootState } from 'store';
 import { useDispatch } from 'react-redux';
-import { setConversation as setConversationState } from '../store/conversationSlice';
+import { setConversation as setConversationState } from 'store/conversationSlice';
 
 const QueryInput = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
+  let abortController: AbortController | undefined = undefined;
+  const [reader, setReader] = useState<
+    ReadableStreamDefaultReader<Uint8Array> | undefined
+  >();
+
+  const [isStreaming, setIsStreaming] = useState(false);
   const [conversation, setConversation] = useState<Message[]>([]);
+  const model = useSelector((state: RootState) => state.conversation.model);
   const systemPrompt = useSelector(
     (state: RootState) => state.conversation.systemPrompt
   );
+  const temperature = useSelector(
+    (state: RootState) => state.conversation.temperature
+  );
+  const documentRetrievalType = useSelector(
+    (state: RootState) => state.conversation.documentRetrievalType
+  );
+
+  const selectedCollection = useSelector(
+    (state: RootState) => state.documents.selectedCollection
+  );
+
   const [inputText, setInputText] = useState('');
-  const [sliderValue, setSliderValue] = useState(0.5);
-  const [radioValue, setRadioValue] = useState('simple');
-  const { REACT_APP_CHAIN_END_TRIGGER_MESSAGE } = process.env;
+
+  const {
+    REACT_APP_CHAIN_END_TRIGGER_MESSAGE,
+    REACT_APP_CHAT_END_TRIGGER_MESSAGE,
+    REACT_APP_LLM_START_TRIGGER_MESSAGE
+  } = process.env;
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setInputText(event.target.value);
@@ -36,28 +51,41 @@ const QueryInput = () => {
     dispatch(setConversationState(conversation));
   }, [conversation]);
 
-  const handleSliderChange = (
-    event: Event,
-    value: number | number[],
-    activeThumb: number
-  ) => {
-    setSliderValue(value as number);
-  };
-
-  const handleRadioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRadioValue(event.target.value);
-  };
-
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter') {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault(); // prevent newline from being entered
       queryDocuments();
     }
   };
 
+  const stopRequest = async () => {
+    console.log('aborting request');
+    abortController?.abort();
+    await reader?.cancel();
+    setReader(undefined);
+    setIsStreaming(false);
+  };
+
   const queryDocuments = async () => {
+    abortController = new AbortController();
+    let questionText = inputText;
+    let updatedConversation = [...conversation];
+    if (!inputText) {
+      const lastUserMessage = updatedConversation
+        .slice()
+        .reverse()
+        .find((message) => message.source === 'user');
+      if (lastUserMessage) {
+        questionText = lastUserMessage.content.join();
+        updatedConversation = updatedConversation.slice(0, -2);
+      }
+    }
+
+    setConversation(updatedConversation);
+
     setConversation((prev) => [
       ...prev,
-      { source: 'user', content: [inputText] }
+      { source: 'user', content: [questionText] }
     ]);
     setConversation((prev) => [
       ...prev,
@@ -66,148 +94,175 @@ const QueryInput = () => {
     setInputText('');
 
     try {
-      const result = await fetch(
-        'http://localhost:4000/vectorstore/askQuestion',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            question: inputText,
-            systemPrompt,
-            queryType: radioValue,
-            temperature: sliderValue
-          })
-        }
-      );
+      const result = await fetch('http://localhost:4000/collections/question', {
+        method: 'POST',
+        signal: abortController.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: questionText,
+          systemPrompt,
+          queryType: documentRetrievalType,
+          temperature,
+          collectionName: selectedCollection.name,
+          model
+        })
+      });
+
+      if (!result.ok) {
+        setIsStreaming(false);
+        throw new Error(`HTTP error, status code: ${result.status}`);
+      }
       // Read the response body as a stream
-      const reader = result.body?.getReader();
-
-      // Function to process the stream
-      const readStream = async () => {
-        if (reader) {
-          try {
-            const { done, value } = await reader.read();
-
-            if (done) {
-              return;
-            }
-
-            // Decode the received chunk and add it to the receivedData string
-            const decodedChunk = new TextDecoder().decode(value);
-
-            if (REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
-              setConversation((prev) => {
-                const commandFilteredOut = decodedChunk
-                  .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
-                  .join('');
-
-                const lastElementIndex = prev.length - 1;
-
-                let updatedAssistantMessage: Message = {
-                  source: 'assistant',
-                  content: [...prev[lastElementIndex].content]
-                };
-
-                if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
-                  updatedAssistantMessage.content.push(' ');
-                } else {
-                  const lastIndexInContentArray =
-                    updatedAssistantMessage.content.length - 1;
-                  updatedAssistantMessage.content[lastIndexInContentArray] =
-                    updatedAssistantMessage.content[lastIndexInContentArray] +
-                    commandFilteredOut;
-                }
-
-                const newConversation = [...prev];
-                newConversation[lastElementIndex] = updatedAssistantMessage;
-                return newConversation;
-              });
-
-            // Continue reading the stream
-            readStream();
-          } catch (error) {
-            toast.error('Failed to upload files----------');
-            return;
-          }
-        }
-      };
-
-      // Start reading the stream
-      readStream();
+      setReader(result.body?.getReader());
+      setIsStreaming(true);
     } catch (error) {
-      toast.error('Failed to upload files');
+      setIsStreaming(false);
+      toast.error('Failed query documents');
       return;
     }
   };
+
+  // Function to process the stream
+  const readStream = async () => {
+    if (reader) {
+      try {
+        const { value } = await reader.read();
+
+        const decodedChunk = new TextDecoder().decode(value);
+
+        if (decodedChunk === REACT_APP_CHAT_END_TRIGGER_MESSAGE) {
+          setIsStreaming(false);
+          return;
+        }
+
+        if (
+          REACT_APP_CHAIN_END_TRIGGER_MESSAGE &&
+          REACT_APP_LLM_START_TRIGGER_MESSAGE
+        )
+          setConversation((prev) => {
+            const commandFilteredOut = decodedChunk
+              .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+              .join('')
+              .split(REACT_APP_LLM_START_TRIGGER_MESSAGE)
+              .join('');
+
+            const lastElementIndex = prev.length - 1;
+
+            const updatedAssistantMessage: Message = {
+              source: 'assistant',
+              content: [...prev[lastElementIndex].content]
+            };
+
+            if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
+              updatedAssistantMessage.content.push(' ');
+            } else if (decodedChunk === REACT_APP_LLM_START_TRIGGER_MESSAGE) {
+              const lastIndexInContentArray =
+                updatedAssistantMessage.content.length - 1;
+
+              updatedAssistantMessage.content[lastIndexInContentArray] +=
+                '\n\n';
+            } else {
+              const lastIndexInContentArray =
+                updatedAssistantMessage.content.length - 1;
+
+              updatedAssistantMessage.content[lastIndexInContentArray] +=
+                commandFilteredOut;
+            }
+
+            const newConversation = [...prev];
+            newConversation[lastElementIndex] = updatedAssistantMessage;
+            return newConversation;
+          });
+      } catch (error) {
+        setIsStreaming(false);
+        toast.error('Failed query documents');
+        return;
+      }
+    }
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const read = async () => {
+      try {
+        while (isStreaming && reader && isMounted) {
+          // check isMounted before each iteration
+          await readStream(); // await the readStream call
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    read();
+
+    return () => {
+      isMounted = false; // set isMounted to false on unmount
+    };
+  }, [isStreaming, reader]);
 
   return (
     <Grid
       item
       container
-      rowGap={1}
+      rowGap={2}
       sx={{
-        pt: 2,
-        flex: 1,
+        p: 2,
         flexDirection: 'column',
         flexWrap: 'nowrap',
-        height: 150
+        position: 'relative',
+        justifyContent: 'flex-end',
+        height: 140,
+        boxShadow: '0px -8px 30px 2px rgba(33,33,33, 0.6)'
       }}
     >
+      {(conversation.length > 0 || isStreaming) && (
+        <Grid container sx={{ justifyContent: 'center', alignItems: 'center' }}>
+          <Button
+            onClick={isStreaming ? () => stopRequest() : queryDocuments}
+            variant="outlined"
+            startIcon={isStreaming ? <StopIcon /> : <RefreshIcon />}
+            sx={{
+              borderColor: theme.palette.grey[700],
+              color: theme.palette.grey[400],
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: theme.palette.grey[800],
+                borderColor: theme.palette.grey[700],
+                color: theme.palette.grey[400]
+              }
+            }}
+          >
+            {isStreaming ? 'Stop generating' : 'Regenerate response'}
+          </Button>
+        </Grid>
+      )}
       <Grid
-        item
-        container
-        gap={2}
-        alignItems="center"
-        justifyContent="space-between"
+        sx={{
+          pl: 8,
+          pr: 8
+        }}
       >
-        <Grid item sx={{ width: 500, pl: 4, pr: 4 }}>
-          <Slider
-            value={sliderValue}
-            onChange={handleSliderChange}
-            defaultValue={0.5}
-            min={0}
-            step={0.1}
-            max={1}
-            valueLabelDisplay="auto"
-            marks={[
-              { value: 0, label: 'precise' },
-              { value: 0.5, label: 'neutral' },
-              { value: 1, label: 'creative' }
-            ]}
-          />
-        </Grid>
-        <Grid item>
-          <RadioGroup row defaultValue="simple" onChange={handleRadioChange}>
-            <FormControlLabel
-              value="simple"
-              control={<Radio />}
-              label="Simple"
-            />
-            <FormControlLabel
-              value="refine"
-              control={<Radio />}
-              label="Refine"
-            />
-          </RadioGroup>
-        </Grid>
-      </Grid>
-      <Grid sx={{ flex: 1 }}>
         <TextField
-          fullWidth
           label="Query Documents"
           value={inputText}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           multiline
-          rows={3}
+          maxRows={4}
+          fullWidth
           InputProps={{
             style: {
-              color: '#EEE',
+              color: theme.palette.grey[100],
               height: '100%',
               alignItems: 'flex-start'
             }
           }}
-          sx={{ label: { color: '#888' } }}
+          sx={{
+            label: { color: theme.palette.grey[500] },
+            resize: 'vertical'
+          }}
         />
       </Grid>
     </Grid>

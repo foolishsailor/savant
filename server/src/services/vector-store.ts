@@ -3,14 +3,16 @@ import { RetrievalQAChain, loadQARefineChain } from 'langchain/chains';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { StreamingCallbackHandler } from '@/langchain/callbacks/streaming-callback-handler';
+import { ConsoleCallbackHandler } from '@/langchain/callbacks/console-callback-handler';
 import { loader } from '../loaders';
 import { PromptTemplate } from 'langchain/prompts';
 import { ChromaClient, Collection } from 'chromadb';
 import { processDocumentsIntoObjects } from '@/utils/parse';
 import { Document } from 'langchain/dist/document';
+import { Where, GetResponse, Metadata } from 'chromadb/dist/main/types';
 
 export interface DocumentsObjectInterface {
-  metadata?: Record<string, unknown>;
+  metadata?: Metadata;
   embedding?: Record<string, unknown>;
   document: string;
   id: string;
@@ -39,8 +41,8 @@ export class VectorStore {
         streaming: true,
         verbose: true,
         temperature: 0.5
-      },
-      { organization: process.env.OPENAI_ORG_ID }
+      }
+      // { organization: process.env.OPENAI_ORG_ID }
     );
 
     this.chatHistory = [];
@@ -61,39 +63,46 @@ export class VectorStore {
   }
 
   async deleteCollection(name: string) {
-    const result = await this.client.deleteCollection(name);
+    const result = await this.client.deleteCollection({ name });
     return result;
   }
 
   async getCollection(name: string) {
-    return await this.client.getCollection(name);
+    return await this.client.getCollection({ name });
+  }
+
+  async createCollection(name: string) {
+    return await this.client.createCollection({ name });
   }
 
   async getDocuments(
     collection: Collection,
     query?: object
   ): Promise<Record<string, DocumentsObjectInterface[]>> {
-    const documents = await collection.get(undefined, query);
+    const documents: GetResponse = await collection.get({
+      where: query as Where
+    });
 
-    return documents.error ? {} : processDocumentsIntoObjects(documents);
+    return processDocumentsIntoObjects(documents);
   }
 
   async addDocuments(file: Express.Multer.File) {
-    const docs = await loader(file);
+    const { documents, errors } = await loader(file);
+    if (VectorStore.store) await VectorStore.store.addDocuments(documents);
 
-    if (VectorStore.store) await VectorStore.store.addDocuments(docs);
-
-    return docs;
+    return { documents, errors };
   }
 
   async deleteDocuments(collectionName: string, filename: string) {
-    const collection = await this.client.getCollection(collectionName);
+    const collection = await this.client.getCollection({
+      name: collectionName
+    });
 
-    await collection.delete(undefined, { filename });
+    await collection.delete({ where: { filename } });
 
     const documents = await collection.get();
 
-    return documents.error ? {} : processDocumentsIntoObjects(documents);
+    return processDocumentsIntoObjects(documents);
   }
 
   clearChatHistory() {
@@ -107,6 +116,14 @@ export class VectorStore {
     temperature: number,
     callback: (token: string) => void
   ) {
+    console.log(
+      'askQuestion',
+      question,
+      systemPrompt,
+      queryType,
+      temperature,
+      callback
+    );
     StreamingCallbackHandler.setStreamCallback(callback);
 
     const chatPrompt = PromptTemplate.fromTemplate(
@@ -144,7 +161,7 @@ export class VectorStore {
           query: prompt,
           temperature
         },
-        [new StreamingCallbackHandler()]
+        [new StreamingCallbackHandler(), new ConsoleCallbackHandler()]
       );
 
       this.chatHistory.push(res.output_text);
@@ -161,7 +178,7 @@ export class VectorStore {
             query: prompt,
             temperature
           },
-          [new StreamingCallbackHandler()]
+          [new StreamingCallbackHandler(), new ConsoleCallbackHandler()]
         );
 
         this.chatHistory.push(res.text);

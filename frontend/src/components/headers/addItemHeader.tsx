@@ -17,7 +17,7 @@ const AddItemHeader = ({ title, handleAddCollection }: AddItemHeaderProps) => {
       justifyContent="space-between"
       sx={{
         borderBottom: `solid 1px ${theme.palette.grey[700]}`,
-        backgroundColor: theme.palette.grey[900],
+        backgroundColor: theme.palette.background.paper,
         zIndex: 5,
         pb: 1
       }}

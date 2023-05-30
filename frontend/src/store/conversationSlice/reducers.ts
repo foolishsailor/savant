@@ -2,6 +2,7 @@ import { PayloadAction } from '@reduxjs/toolkit';
 import { ConversationState } from './state';
 
 import { Message } from '../../types/message';
+import { OpenAiModels } from 'types/models';
 
 export const reducers = {
   setSystemPrompt: (
@@ -21,5 +22,17 @@ export const reducers = {
     action: PayloadAction<Message[]>
   ) => {
     state.conversation = [...state.conversation, ...action.payload];
+  },
+  setTemperature: (state: ConversationState, action: PayloadAction<number>) => {
+    state.temperature = action.payload;
+  },
+  setDocumentRetrievalType: (
+    state: ConversationState,
+    action: PayloadAction<'simple' | 'refine'>
+  ) => {
+    state.documentRetrievalType = action.payload;
+  },
+  setModel: (state: ConversationState, action: PayloadAction<OpenAiModels>) => {
+    state.model = action.payload;
   }
 };

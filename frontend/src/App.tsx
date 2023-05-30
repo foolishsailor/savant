@@ -1,23 +1,34 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import { Container } from '@mui/material';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import {
+  Container,
+  CssBaseline,
+  ThemeProvider,
+  createTheme
+} from '@mui/material';
 import store from './store';
-
-import { PageContainer } from './components/containers/container.elements';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import AppBarComponent from './components/appBar';
-import { ContentContainer } from './components/containers/container.elements';
+import {
+  PageContainer,
+  ContentContainer
+} from './components/containers/container.elements';
 import DocumentSideBar from './components/documentSideBar';
 import Conversation from './components/conversation';
 import DocumentLightBox from './components/documentLightBox';
+import { initializeApp } from 'firebase/app';
+
+import { AuthProvider } from 'providers/authProvider';
+import { firebaseConfig } from 'services/authService';
+import ConversationSideBar from 'components/conversationSideBar';
 
 const darkTheme = createTheme({
   palette: {
     mode: 'dark'
   }
 });
+
+export const firebaseApp = initializeApp(firebaseConfig);
 
 const App: React.FC = () => {
   return (
@@ -36,16 +47,16 @@ const App: React.FC = () => {
       />
       <CssBaseline />
       <Provider store={store}>
-        <Container maxWidth="xl" sx={{ height: 300, maxHeight: '100vh' }}>
+        <AuthProvider>
           <DocumentLightBox />
           <PageContainer>
-            <AppBarComponent />
             <ContentContainer>
+              <ConversationSideBar />
               <Conversation />
               <DocumentSideBar />
             </ContentContainer>
           </PageContainer>
-        </Container>
+        </AuthProvider>
       </Provider>
     </ThemeProvider>
   );

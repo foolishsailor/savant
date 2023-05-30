@@ -10,21 +10,28 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useTheme } from '@mui/system';
 
-import { SidebarItem } from '../containers/container.elements';
+import { SidebarItem } from 'components/containers/container.elements';
 import { toast } from 'react-toastify';
 
-import SingleInputDropDown from '../dropdowns/singleInputDropDown';
+import SingleInputDropDown from 'components/dropdowns/singleInputDropDown';
 import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '../../store';
+import { RootState } from 'store';
 import {
   setDocuments,
   setSelectedCollection,
   setCollections
-} from '../../store/documentsSlice';
+} from 'store/documentsSlice';
+
+import useCollectionService from 'services/apiService/useCollectionService';
+import useDocumentService from 'services/apiService/useDocumentService';
 
 const CollectionsList = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
+  const { addCollection, deleteCollection, getCollections } =
+    useCollectionService();
+
+  const { getDocuments } = useDocumentService();
 
   const selectedCollection = useSelector(
     (state: RootState) => state.documents.selectedCollection
@@ -34,86 +41,51 @@ const CollectionsList = () => {
     (state: RootState) => state.documents.collections
   );
 
-  const handleAddCollection = async (collectionName: string) => {
-    try {
-      const result = await fetch(
-        `http://localhost:4000/collections?collectionName=${collectionName}`
-      );
-
-      const data = await result.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      dispatch(setCollections([...collections, ...data]));
-
-      const documents = data[0];
-
-      dispatch(setSelectedCollection(documents));
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to add collection: ' + error);
-    }
+  const handleAddCollection = (collectionName: string) => {
+    addCollection(collectionName)
+      .then((data) => {
+        dispatch(setCollections(data));
+      })
+      .catch((error) => {
+        toast.error('Failed to add collection: ' + error);
+      });
   };
 
-  const deleteCollection = async (index: number) => {
-    try {
-      const collection = collections[index];
-      const result = await fetch(
-        `http://localhost:4000/collections/${collection.name}`,
-        { method: 'DELETE' }
-      );
-      const data = await result.json();
-
-      if (data.error) {
-        throw new Error(data.error);
-      }
-
-      dispatch(setCollections(data));
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to delete documents: ' + error);
-    }
+  const handleDeleteCollection = (index: number) => {
+    const collection = collections[index];
+    deleteCollection(collection.name)
+      .then((data) => {
+        dispatch(setCollections(data));
+      })
+      .catch((error) => {
+        toast.error('Failed to delete documents: ' + error);
+      });
   };
 
   useEffect(() => {
-    const getCollections = async () => {
+    (async () => {
       try {
-        const result = await fetch('http://localhost:4000/collections');
-        const data = await result.json();
-
+        const data = await getCollections();
         dispatch(setCollections(data));
+
+        if (data.length > 0) {
+          dispatch(setSelectedCollection(data[0]));
+        }
       } catch (error) {
-        console.error(error);
+        toast.error('Failed to get collections: ' + error);
       }
-    };
-    getCollections();
+    })();
   }, []);
 
   useEffect(() => {
-    const setCollection = async () => {
-      try {
-        await fetch(
-          `http://localhost:4000/collections?collectionName=${selectedCollection?.name}`
-        );
-        const result = await fetch(
-          `http://localhost:4000/documents?collectionName=${selectedCollection?.name}`
-        );
-        const data = await result.json();
-
-        if (data.error) {
-          throw new Error(data.error);
-        }
-
-        dispatch(setDocuments(data));
-      } catch (error) {
-        console.error(error);
-        toast.error('Failed to get documents: ' + error);
-      }
-    };
-
-    if (selectedCollection?.name) setCollection();
+    if (selectedCollection?.name)
+      getDocuments(selectedCollection.name)
+        .then((data) => {
+          dispatch(setDocuments(data));
+        })
+        .catch((error) => {
+          toast.error('Failed to get documents: ' + error);
+        });
   }, [selectedCollection]);
 
   return (
@@ -140,7 +112,7 @@ const CollectionsList = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => deleteCollection(index)}
+                onClick={() => handleDeleteCollection(index)}
               >
                 <Grid sx={{ ml: 1 }}>
                   <DeleteIcon />

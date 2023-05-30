@@ -14,7 +14,6 @@ export const reducers = {
     state: DocumentState,
     action: PayloadAction<DocumentsObject>
   ) => {
-    console.log('setDocuments', action.payload);
     state.documents = action.payload;
   },
   setCollections: (

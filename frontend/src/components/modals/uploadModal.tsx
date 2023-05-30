@@ -13,6 +13,7 @@ import UploadList from '../lists/uploadList';
 import { toast } from 'react-toastify';
 import { DocumentsObject } from '../../types/documents';
 import { CollectionList } from '../../types/collection';
+import useDocumentService from 'services/apiService/useDocumentService';
 
 interface Props {
   open: boolean;
@@ -30,9 +31,17 @@ const UploadModal = ({
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number[]>([]);
+
+  const { addDocuments } = useDocumentService();
 
   const onDrop = (acceptedFiles: File[]) => {
-    setFiles([...files, ...acceptedFiles]);
+    const newFiles = acceptedFiles.map((file) => file);
+    setFiles([...files, ...newFiles]);
+    setUploadProgress([
+      ...uploadProgress,
+      ...new Array(newFiles.length).fill(0)
+    ]);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -47,27 +56,27 @@ const UploadModal = ({
       formData.append('documents', file);
     });
 
-    if (selectedCollection?.name)
-      formData.append('collectionName', selectedCollection.name);
+    if (!selectedCollection?.name) return toast.error('No colection selected');
+
+    formData.append('collectionName', selectedCollection.name);
 
     try {
-      const response = await fetch('http://localhost:4000/documents', {
-        method: 'POST',
-        body: formData
-      });
-
       setIsLoading(false);
 
-      if (response.ok) {
-        const documents = await response.json();
+      const { documents, errors } = await addDocuments(formData);
 
-        onUploadDocuments(documents);
-        setFiles([]);
-        toast.success('Files uploaded successfully');
-        onClose();
-      } else {
-        toast.error('Failed to upload files');
+      onUploadDocuments(documents);
+      setFiles([]);
+      setUploadProgress([]);
+      toast.success('Files uploaded successfully');
+
+      if (errors && errors.length > 0) {
+        toast.warning(
+          `Failed to upload some files:${JSON.stringify(errors, null, 2)}`
+        );
       }
+
+      onClose();
     } catch (error) {
       toast.error(`Failed to upload files:${error}`);
       setIsLoading(false);
@@ -96,7 +105,7 @@ const UploadModal = ({
         }}
       >
         <Typography variant="h6">Upload Files</Typography>
-        <UploadList files={files} />
+        <UploadList files={files} uploadProgress={uploadProgress} />
         <Grid
           {...getRootProps()}
           sx={{

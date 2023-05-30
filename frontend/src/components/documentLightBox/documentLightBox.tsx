@@ -7,14 +7,17 @@ import {
   Box,
   Typography,
   IconButton,
-  ListItemButton
+  ListItemButton,
+  useTheme,
+  Tab,
+  Tabs
 } from '@mui/material';
 import {
   ModalContentContainer,
   ContentContainer
 } from '../containers/container.elements';
 import { setDocumentLightBoxIsOpen } from '../../store/documentsSlice';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, SetStateAction } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store';
 import { Document } from '../../types/documents';
@@ -22,6 +25,7 @@ import Markdown from '../markdown';
 import CloseIcon from '@mui/icons-material/Close';
 
 const DocumentLightBox = () => {
+  const theme = useTheme();
   const dispatch = useDispatch();
   const selectedDocument = useSelector(
     (state: RootState) => state.documents.selectedDocument
@@ -36,6 +40,14 @@ const DocumentLightBox = () => {
   const [selectedDocuments, setSelectedDocuments] = useState<Document[]>([]);
   const [selectedDocumentPiece, setSelectedDocumentPiece] =
     useState<Document | null>(null);
+  const [selectedTab, setSelectedTab] = useState(0);
+
+  const handleTabChange = (
+    event: React.SyntheticEvent<Element, Event>,
+    newValue: SetStateAction<number>
+  ) => {
+    setSelectedTab(newValue);
+  };
 
   useEffect(() => {
     if (selectedDocument) {
@@ -72,21 +84,56 @@ const DocumentLightBox = () => {
           </IconButton>
         </Grid>
         <ContentContainer>
-          <ModalContentContainer>
-            <Box
+          <ModalContentContainer sx={{ flexDirection: 'column' }}>
+            <Tabs value={selectedTab} onChange={handleTabChange}>
+              <Tab label="Document Content" />
+              <Tab label="Document Metadata" />
+            </Tabs>
+            <Grid
               sx={{
-                height: '100%',
                 width: '100%',
-                overflow: 'auto'
+                overflow: 'auto',
+                display: 'flex',
+
+                backgroundColor: theme.palette.grey[900]
               }}
             >
-              <Markdown
-                message={
-                  selectedDocumentPiece?.document ||
-                  'Select a document to view its content.'
-                }
-              />
-            </Box>
+              {selectedTab === 0 && (
+                <Grid
+                  item
+                  container
+                  sx={{
+                    flex: 1,
+                    padding: theme.spacing(1)
+                  }}
+                >
+                  <Markdown
+                    message={
+                      selectedDocumentPiece?.document ||
+                      'Select a document to view its content.'
+                    }
+                  />
+                </Grid>
+              )}
+              {selectedTab === 1 && (
+                <Grid
+                  item
+                  container
+                  sx={{
+                    backgroundColor: theme.palette.grey[900],
+                    padding: theme.spacing(1)
+                  }}
+                >
+                  <Markdown
+                    message={
+                      '```json\n' +
+                      JSON.stringify(selectedDocumentPiece?.metadata, null, 4) +
+                      '\n```'
+                    }
+                  />
+                </Grid>
+              )}
+            </Grid>
           </ModalContentContainer>
           <Grid item>
             <List>

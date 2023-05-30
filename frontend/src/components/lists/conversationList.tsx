@@ -32,9 +32,9 @@ const ConversationList = () => {
             sx={{
               backgroundColor:
                 message.source === 'assistant'
-                  ? theme.palette.grey[700]
-                  : theme.palette.grey[800],
-              borderBottom: `${theme.palette.grey[900]} 1px solid`,
+                  ? theme.palette.grey[800]
+                  : theme.palette.grey[900],
+              borderBottom: `${theme.palette.grey[700]} 1px solid`,
               width: '100%',
               pt: 2,
               pb: 2,
@@ -81,6 +81,12 @@ const ConversationList = () => {
           </Grid>
         );
       })}
+      <Grid
+        sx={{
+          backgroundColor: theme.palette.grey[900],
+          minHeight: 40
+        }}
+      />
     </Grid>
   );
 };
