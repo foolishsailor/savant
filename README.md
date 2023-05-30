@@ -30,15 +30,62 @@ cd server
 npm i
 ```
 
-### Configure Settings
+-- or --
 
-Create a local .env file in the root of the repo with the following:
+#### Python Server
+
+##### Install poetry
+
+[Poetry Install Guide](https://python-poetry.org/docs/)
+
+**Linux, macOS, Windows (WSL)**
+
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+**Windows (Powershell)**
+
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
 
 ```bash
-CHAIN_END_TRIGGER_MESSAGE=c0fb7f7030574dd7801ae6f2d53dfd51 # <== this is a bit of a hack but needs to be copied
-OPENAI_API_KEY=YOUR_KEY_HERE # required
-DEFAULT_MODEL=gpt-3.5-turbo # or gpt-4
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+npm i
 ```
+
+##### Configure Poetry
+
+**config poetry to creaty viertual env in locl directory**
+
+```
+poetry config virtualenvs.in-project true
+```
+
+**create poetry virtual env**
+
+```
+poetry shell
+```
+
+**install application in virtual env**
+
+```
+poetry install
+```
+
+**select the python.exe in the virtual environment as your interpreter**
+
+This will create a .venv in the pyServer directory.
+
+[How to select a python intrepreter](https://code.visualstudio.com/docs/python/environments)
+
+Following the above guide select the python.exe found in: pyServer/.venv/Scripts/python.exe
+
+### Configure Settings
+
+Create a local .env file in the root of the repo using the .env.template as a guide for both Frontend and Backend
 
 ### Install External Applications
 
@@ -62,17 +109,26 @@ docker-compose up -d --build
 ### Run Savant BE
 
 ```bash
-cs server
+cd server
 npm start
+```
+
+-- or --
+
+### Run Savant Python BE
+
+```bash
+cd pyServer
+poetry run python main.py
 ```
 
 ### Run Savant FE
 
 ```bash
-cs frontend
+cd frontend
 npm start
 ```
 
 ## Contact
 
-If you have any questions, fin me on [Twitter](https://twitter.com/foolishsailor).
+If you have any questions, find me on [Twitter](https://twitter.com/foolishsailor).
