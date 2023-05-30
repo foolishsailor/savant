@@ -15,8 +15,8 @@ class ConsoleCallbackHandler(BaseCallbackHandler):
         print(chalk.green.bold("Prompts: "), json.dumps(prompts, indent=2))
         print(chalk.green.bold("Other Args: "), kwargs)
 
-    def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
-        print(token)
+    # def on_llm_new_token(self, token: str, **kwargs: Any) -> Any:
+    #     print(token)
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
         print(chalk.blue("========= LLM End ========="))
