@@ -559,6 +559,26 @@ typing-inspect = ">=0.4.0"
 dev = ["flake8", "hypothesis", "ipython", "mypy (>=0.710)", "portray", "pytest (>=6.2.3)", "simplejson", "types-dataclasses"]
 
 [[package]]
+name = "dnspython"
+version = "2.3.0"
+description = "DNS toolkit"
+optional = false
+python-versions = ">=3.7,<4.0"
+files = [
+    {file = "dnspython-2.3.0-py3-none-any.whl", hash = "sha256:89141536394f909066cabd112e3e1a37e4e654db00a25308b0f130bc3152eb46"},
+    {file = "dnspython-2.3.0.tar.gz", hash = "sha256:224e32b03eb46be70e12ef6d64e0be123a64e621ab4c0822ff6d450d52a540b9"},
+]
+
+[package.extras]
+curio = ["curio (>=1.2,<2.0)", "sniffio (>=1.1,<2.0)"]
+dnssec = ["cryptography (>=2.6,<40.0)"]
+doh = ["h2 (>=4.1.0)", "httpx (>=0.21.1)", "requests (>=2.23.0,<3.0.0)", "requests-toolbelt (>=0.9.1,<0.11.0)"]
+doq = ["aioquic (>=0.9.20)"]
+idna = ["idna (>=2.1,<4.0)"]
+trio = ["trio (>=0.14,<0.23)"]
+wmi = ["wmi (>=1.5.1,<2.0.0)"]
+
+[[package]]
 name = "docx2txt"
 version = "0.8"
 description = "A pure python-based utility to extract text and images from docx files."
@@ -623,6 +643,22 @@ files = [
     {file = "duckdb-0.8.0-cp39-cp39-win_amd64.whl", hash = "sha256:d0f0f104d30418808bafbe9bccdcd238588a07bd246b3cff13842d60bfd8e8ba"},
     {file = "duckdb-0.8.0.tar.gz", hash = "sha256:c68da35bab5072a64ada2646a5b343da620ddc75a7a6e84aa4a1e0628a7ec18f"},
 ]
+
+[[package]]
+name = "eventlet"
+version = "0.33.3"
+description = "Highly concurrent networking library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "eventlet-0.33.3-py2.py3-none-any.whl", hash = "sha256:e43b9ae05ba4bb477a10307699c9aff7ff86121b2640f9184d29059f5a687df8"},
+    {file = "eventlet-0.33.3.tar.gz", hash = "sha256:722803e7eadff295347539da363d68ae155b8b26ae6a634474d0a920be73cfda"},
+]
+
+[package.dependencies]
+dnspython = ">=1.15.0"
+greenlet = ">=0.3"
+six = ">=1.10.0"
 
 [[package]]
 name = "fastapi"
@@ -1750,6 +1786,20 @@ asyncio-client = ["aiohttp (>=3.4)"]
 client = ["requests (>=2.21.0)", "websocket-client (>=0.54.0)"]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.6"
+description = "A streaming multipart parser for Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "python_multipart-0.0.6-py3-none-any.whl", hash = "sha256:ee698bab5ef148b0a760751c261902cd096e57e10558e11aca17646b74ee1c18"},
+    {file = "python_multipart-0.0.6.tar.gz", hash = "sha256:e9925a80bb668529f1b67c7fdb0a5dacdd7cbfc6fb0bff3ea443fe22bdd62132"},
+]
+
+[package.extras]
+dev = ["atomicwrites (==1.2.1)", "attrs (==19.2.0)", "coverage (==6.5.0)", "hatch", "invoke (==1.7.3)", "more-itertools (==4.3.0)", "pbr (==4.3.0)", "pluggy (==1.0.0)", "py (==1.11.0)", "pytest (==7.2.0)", "pytest-cov (==4.0.0)", "pytest-timeout (==2.1.0)", "pyyaml (==5.1)"]
+
+[[package]]
 name = "python-socketio"
 version = "5.8.0"
 description = "Socket.IO server and client for Python"
@@ -1763,6 +1813,8 @@ files = [
 [package.dependencies]
 bidict = ">=0.21.0"
 python-engineio = ">=4.3.0"
+requests = {version = ">=2.21.0", optional = true, markers = "extra == \"client\""}
+websocket-client = {version = ">=0.54.0", optional = true, markers = "extra == \"client\""}
 
 [package.extras]
 asyncio-client = ["aiohttp (>=3.4)"]
@@ -2397,6 +2449,22 @@ files = [
 anyio = ">=3.0.0"
 
 [[package]]
+name = "websocket-client"
+version = "1.5.2"
+description = "WebSocket client for Python with low level API options"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "websocket-client-1.5.2.tar.gz", hash = "sha256:c7d67c13b928645f259d9b847ab5b57fd2d127213ca41ebd880de1f553b7c23b"},
+    {file = "websocket_client-1.5.2-py3-none-any.whl", hash = "sha256:f8c64e28cd700e7ba1f04350d66422b6833b82a796b525a51e740b8cc8dab4b1"},
+]
+
+[package.extras]
+docs = ["Sphinx (>=3.4)", "sphinx-rtd-theme (>=0.5)"]
+optional = ["python-socks", "wsaccel"]
+test = ["websockets"]
+
+[[package]]
 name = "websockets"
 version = "11.0.3"
 description = "An implementation of the WebSocket Protocol (RFC 6455 & 7692)"
@@ -2655,4 +2723,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "076fe91c64af3e7c1f30ba905ef7b6417b27fee19c9a1fcae31255e5bdf06d33"
+content-hash = "55c1c421085018957caeda2c4e4c5af4b30d355492b40b4af557f1120db26ff7"

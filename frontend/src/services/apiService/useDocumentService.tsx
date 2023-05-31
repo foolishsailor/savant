@@ -10,8 +10,8 @@ export interface AddDocumentsReturnType {
 }
 
 export interface DeleteDocumentType {
-  collectionName: string;
-  fileName: string;
+  collection_name: string;
+  file_name: string;
 }
 
 const useDocumentService = () => {
@@ -49,7 +49,7 @@ const useDocumentService = () => {
   const getDocuments = useCallback(
     (collectionName: string, signal?: AbortSignal) => {
       return fetchService.get<DocumentsObject>(
-        `/documents?collectionName=${collectionName}`,
+        `/documents/?collection_name=${collectionName}`,
         {
           signal
         }

@@ -58,7 +58,7 @@ const UploadModal = ({
 
     if (!selectedCollection?.name) return toast.error('No colection selected');
 
-    formData.append('collectionName', selectedCollection.name);
+    formData.append('collection_name', selectedCollection.name);
 
     try {
       setIsLoading(false);

@@ -1,12 +1,12 @@
 from flask_socketio import SocketIO, emit
 from server.services.vector_store import VectorStore
 
-socketio = SocketIO()
+socketio = SocketIO(cors_allowed_origins="*")
 
 vector_store = VectorStore()
 
 
-@socketio.on("ask_question", namespace="/openai")
+@socketio.on("query_documents", namespace="/openai")
 def handle_ask_question(json):
     question = json.get("question")
     model_name = json.get("model")
@@ -16,7 +16,7 @@ def handle_ask_question(json):
     collection_name = json.get("collectionName")
 
     def stream_callback(token):
-        emit("my_response", {"data": token}, namespace="/openai")
+        emit("query_document_stream", {"data": token}, namespace="/openai")
 
     vector_store.ask_question(
         question,

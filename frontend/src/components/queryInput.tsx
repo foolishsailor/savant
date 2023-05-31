@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 import { TextField, Grid, useTheme, Button } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import StopIcon from '@mui/icons-material/Stop';
@@ -9,6 +10,8 @@ import { useSelector } from 'react-redux';
 import { RootState } from 'store';
 import { useDispatch } from 'react-redux';
 import { setConversation as setConversationState } from 'store/conversationSlice';
+
+const socket = io('http://localhost:4000');
 
 const QueryInput = () => {
   const theme = useTheme();
@@ -93,114 +96,71 @@ const QueryInput = () => {
     ]);
     setInputText('');
 
-    try {
-      const result = await fetch('http://localhost:4000/collections/question', {
-        method: 'POST',
-        signal: abortController.signal,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: questionText,
-          systemPrompt,
-          queryType: documentRetrievalType,
-          temperature,
-          collectionName: selectedCollection.name,
-          model
-        })
-      });
+    socket.emit('query_documents', {
+      question: questionText,
+      systemPrompt,
+      queryType: documentRetrievalType,
+      temperature,
+      collectionName: selectedCollection.name,
+      model
+    });
 
-      if (!result.ok) {
-        setIsStreaming(false);
-        throw new Error(`HTTP error, status code: ${result.status}`);
-      }
-      // Read the response body as a stream
-      setReader(result.body?.getReader());
-      setIsStreaming(true);
-    } catch (error) {
-      setIsStreaming(false);
-      toast.error('Failed query documents');
-      return;
-    }
+    setIsStreaming(true);
   };
 
   // Function to process the stream
-  const readStream = async () => {
-    if (reader) {
-      try {
-        const { value } = await reader.read();
+  socket.on('query_document_stream', (data) => {
+    const decodedChunk = data;
 
-        const decodedChunk = new TextDecoder().decode(value);
+    if (decodedChunk === REACT_APP_CHAT_END_TRIGGER_MESSAGE) {
+      setIsStreaming(false);
+      return;
+    }
 
-        if (decodedChunk === REACT_APP_CHAT_END_TRIGGER_MESSAGE) {
-          setIsStreaming(false);
-          return;
+    if (
+      REACT_APP_CHAIN_END_TRIGGER_MESSAGE &&
+      REACT_APP_LLM_START_TRIGGER_MESSAGE
+    )
+      setConversation((prev) => {
+        const commandFilteredOut = decodedChunk
+          .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
+          .join('')
+          .split(REACT_APP_LLM_START_TRIGGER_MESSAGE)
+          .join('');
+
+        const lastElementIndex = prev.length - 1;
+
+        const updatedAssistantMessage: Message = {
+          source: 'assistant',
+          content: [...prev[lastElementIndex].content]
+        };
+
+        if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
+          updatedAssistantMessage.content.push(' ');
+        } else if (decodedChunk === REACT_APP_LLM_START_TRIGGER_MESSAGE) {
+          const lastIndexInContentArray =
+            updatedAssistantMessage.content.length - 1;
+
+          updatedAssistantMessage.content[lastIndexInContentArray] += '\n\n';
+        } else {
+          const lastIndexInContentArray =
+            updatedAssistantMessage.content.length - 1;
+
+          updatedAssistantMessage.content[lastIndexInContentArray] +=
+            commandFilteredOut;
         }
 
-        if (
-          REACT_APP_CHAIN_END_TRIGGER_MESSAGE &&
-          REACT_APP_LLM_START_TRIGGER_MESSAGE
-        )
-          setConversation((prev) => {
-            const commandFilteredOut = decodedChunk
-              .split(REACT_APP_CHAIN_END_TRIGGER_MESSAGE)
-              .join('')
-              .split(REACT_APP_LLM_START_TRIGGER_MESSAGE)
-              .join('');
-
-            const lastElementIndex = prev.length - 1;
-
-            const updatedAssistantMessage: Message = {
-              source: 'assistant',
-              content: [...prev[lastElementIndex].content]
-            };
-
-            if (decodedChunk === REACT_APP_CHAIN_END_TRIGGER_MESSAGE) {
-              updatedAssistantMessage.content.push(' ');
-            } else if (decodedChunk === REACT_APP_LLM_START_TRIGGER_MESSAGE) {
-              const lastIndexInContentArray =
-                updatedAssistantMessage.content.length - 1;
-
-              updatedAssistantMessage.content[lastIndexInContentArray] +=
-                '\n\n';
-            } else {
-              const lastIndexInContentArray =
-                updatedAssistantMessage.content.length - 1;
-
-              updatedAssistantMessage.content[lastIndexInContentArray] +=
-                commandFilteredOut;
-            }
-
-            const newConversation = [...prev];
-            newConversation[lastElementIndex] = updatedAssistantMessage;
-            return newConversation;
-          });
-      } catch (error) {
-        setIsStreaming(false);
-        toast.error('Failed query documents');
-        return;
-      }
-    }
-  };
+        const newConversation = [...prev];
+        newConversation[lastElementIndex] = updatedAssistantMessage;
+        return newConversation;
+      });
+  });
 
   useEffect(() => {
-    let isMounted = true;
-
-    const read = async () => {
-      try {
-        while (isStreaming && reader && isMounted) {
-          // check isMounted before each iteration
-          await readStream(); // await the readStream call
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    read();
-
     return () => {
-      isMounted = false; // set isMounted to false on unmount
+      socket.disconnect();
     };
-  }, [isStreaming, reader]);
+  }, []);
 
   return (
     <Grid
