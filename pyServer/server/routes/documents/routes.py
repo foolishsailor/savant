@@ -1,55 +1,44 @@
-from flask import Blueprint, jsonify, request
-import json
-import os
-from typing import List
-
-from werkzeug.utils import secure_filename
-from werkzeug.datastructures import FileStorage
-from server.services.loaders import LoaderResult
-from server.services.vector_store import VectorStore
-
+from typing import List, Optional
+from fastapi import APIRouter, File, Form, UploadFile, HTTPException
+from pydantic import BaseModel
 from .service import DocumentService
 
-documents = Blueprint("documents", __name__)
+documents_router = APIRouter()
 
 document_service = DocumentService()
 
 
-@documents.route("/documents", methods=["GET"])
-def get_documents_route():
-    collection_name = request.args.get("collectionName")
+class DeleteDocumentInput(BaseModel):
+    collection_name: str
+    file_name: str
 
+
+@documents_router.get("/documents")
+def get_documents_route(collection_name: Optional[str] = None):
+    print("get_documents_route", collection_name)
     if not collection_name:
-        return jsonify({"error": "collectionName is required"})
-
-    return json.dumps(document_service.get_documents(collection_name))
-
-
-@documents.route("/documents", methods=["POST"])
-def post_documents_route():
-    if "collectionName" not in request.form:
-        return jsonify({"error": "collectionName is required"}), 400
-
-    collection_name = request.form["collectionName"]
-
-    documents: List[FileStorage] = request.files.getlist("documents")
-
-    if documents is None:
-        return jsonify({"error": "no files attached"}), 400
-
-    return json.dumps(
-        document_service.add_documents(collection_name, documents),
-        default=lambda o: o.__dict__,
-    )
+        raise HTTPException(status_code=400, detail="collection_name is required")
+    return document_service.get_documents(collection_name)
 
 
-@documents.route("/documents/delete", methods=["POST"])
-def delete_document_route():
-    data = request.get_json()
-    collection_name = data.get("collectionName")
-    file_name = data.get("fileName")
+@documents_router.post("/documents")
+async def post_documents_route(
+    collection_name: str = Form(...), documents: List[UploadFile] = File(...)
+):
+    if not collection_name:
+        raise HTTPException(status_code=400, detail="collection_name is required")
 
-    if not collection_name or not file_name:
-        return jsonify({"error": "collectionName and fileName is required"}), 400
+    if not documents:
+        raise HTTPException(status_code=400, detail="no files attached")
 
-    return json.dumps(document_service.delete_documents(collection_name, file_name))
+    return document_service.add_documents(collection_name, documents)
+
+
+@documents_router.post("/documents/delete")
+def delete_document_route(data: DeleteDocumentInput):
+    if not data.collection_name or not data.file_name:
+        raise HTTPException(
+            status_code=400, detail="collection_name and file_name is required"
+        )
+
+    return document_service.delete_documents(data.collection_name, data.file_name)

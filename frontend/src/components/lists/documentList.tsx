@@ -65,8 +65,8 @@ const DocumentsList = () => {
 
     try {
       const data = await deleteDocument({
-        collectionName: selectedCollection.name,
-        fileName: document
+        collection_name: selectedCollection.name,
+        file_name: document
       });
 
       if (data) dispatch(setDocuments(data));

@@ -5,7 +5,7 @@ from server.utils.parse import DocumentsObjectInterface
 from server.services.vector_store import VectorStore
 from langchain.docstore.document import Document
 from werkzeug.utils import secure_filename
-from werkzeug.datastructures import FileStorage
+from fastapi import UploadFile
 from server.services.loaders import LoaderResult
 from chromadb.api.models.Collection import Collection
 from typing import List, Dict
@@ -35,7 +35,7 @@ class DocumentService:
 
         return documents
 
-    def add_documents(self, collection_name: str, documents: List[FileStorage]):
+    def add_documents(self, collection_name: str, documents: List[UploadFile]):
         results: List[LoaderResult] = []
         errors: List[LoaderError] = []
         save_temp_folder = "server/save_temp_files"
@@ -44,7 +44,9 @@ class DocumentService:
             if file.filename:
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(save_temp_folder, filename)
-                file.save(file_path)
+
+                with open(file_path, "wb") as buffer:
+                    buffer.write(file.file.read())
 
                 results.append(
                     DocumentService.vector_store.add_documents(
