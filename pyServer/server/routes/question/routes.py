@@ -1,13 +1,18 @@
-from flask_socketio import SocketIO, emit
+from socketio import AsyncServer
 from server.services.vector_store import VectorStore
 
-socketio = SocketIO(cors_allowed_origins="*")
+socketio = AsyncServer(async_mode="asgi")
 
 vector_store = VectorStore()
 
 
+@socketio.event
+async def connect(sid, environ):
+    print("Client connected")
+
+
 @socketio.on("query_documents", namespace="/openai")
-def handle_ask_question(json):
+async def handle_ask_question(sid, json):
     question = json.get("question")
     model_name = json.get("model")
     system_prompt = json.get("systemPrompt")
@@ -15,10 +20,12 @@ def handle_ask_question(json):
     temperature = json.get("temperature")
     collection_name = json.get("collectionName")
 
-    def stream_callback(token):
-        emit("query_document_stream", {"data": token}, namespace="/openai")
+    async def stream_callback(token):
+        await socketio.emit(
+            "query_document_stream", {"data": token}, namespace="/openai"
+        )
 
-    vector_store.ask_question(
+    await vector_store.ask_question(
         question,
         model_name,
         system_prompt,
@@ -29,6 +36,6 @@ def handle_ask_question(json):
     )
 
 
-# @socketio.on('stop_question', namespace='/openai')
-# def handle_stop_question(json):
-#     vector_store.stop_question()
+# @sio.on('stop_question', namespace='/openai')
+# async def handle_stop_question(sid, json):
+#     await vector_store.stop_question()

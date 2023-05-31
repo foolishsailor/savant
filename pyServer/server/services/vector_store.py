@@ -104,7 +104,7 @@ class VectorStore:
     def clear_chat_history(self):
         self.chat_history = []
 
-    def ask_question(
+    async def ask_question(
         self,
         question: str,
         model_name: str,

@@ -21,7 +21,7 @@ requests = "^2.31.0"
 socketio = "^0.2.1"
 flask-socketio = "^5.3.4"
 eventlet = "^0.33.3"
-python-socketio = {extras = ["client"], version = "^5.8.0"}
+python-socketio = {extras = ["asgi"], version = "^5.8.0"}
 python-multipart = "^0.0.6"
 
 
